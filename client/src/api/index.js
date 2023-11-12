@@ -26,4 +26,14 @@ const filterProducts = async (page, filters) => {
   }
 }
 
-export default filterProducts
+const handleToggleDelete = async (id) => {
+  try {
+    const { data } = await axios.patch(`/admin/toggle-soft-delete/${id}`)
+    if (await data) return data
+  } catch (error) {
+    console.error('Error handling delete', error)
+    return { success: false, error: 'Something went wrong' }
+  }
+}
+
+export { filterProducts, handleToggleDelete }

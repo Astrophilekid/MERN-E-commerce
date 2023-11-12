@@ -3,9 +3,11 @@ import AdminProductCard from '../../../components/admin/AdminProductCard'
 import { COLORS } from '../../../styles/color'
 import { useContext, useEffect, useState } from 'react'
 import Pagination from '@mui/material/Pagination'
-import filterProducts from '../../../api'
+import { filterProducts } from '../../../api'
 import { StateContext } from '../../../StateContext'
 import { Link, useParams } from 'react-router-dom'
+
+import HomeProductSkelton from '../../../components/skeltons/HomeProductSkelton'
 
 const AdminViewProductsPage = () => {
   const [products, setProducts] = useState([])
@@ -14,51 +16,22 @@ const AdminViewProductsPage = () => {
   const [pageLoading, setPageLoading] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
   const [isVisible, setIsVisible] = useState(false)
+  // for deleted products page quick recycle button
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const { searchResults, search } = useContext(StateContext)
   const { category } = useParams()
 
-  // console.log(category)
-
-  // const fetchAllProducts = async () => {
-  //   setIsLoading(true)
-  //   setPageLoading(true)
-  //   try {
-  //     const { data } = await axios.get(
-  //       `/products/view-all-products?page=${page}`
-  //     )
-
-  //     if (data.success) {
-  //       setTotalPages(data.totalPages)
-  //       setProducts(data.products)
-  //       setTimeout(() => {
-  //         setPageLoading(false)
-  //         setIsLoading(false)
-  //       }, 1000)
-  //     } else {
-  //       setProducts((prev) => {
-  //         return [...prev]
-  //       })
-  //       setTimeout(() => {
-  //         setPageLoading(false)
-  //         setIsLoading(false)
-  //       }, 1000)
-  //     }
-  //   } catch (err) {
-  //     console.log('error : ' + err)
-  //     setIsLoading(false)
-  //     setPageLoading(false)
-  //     setProducts((prev) => {
-  //       return [...prev]
-  //     })
-  //   }
-  // }
-
   const fetchProductsByCategory = async (category) => {
+    setIsLoading(true)
     try {
       const response = await filterProducts(page, { category })
       setProducts(response.products)
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 500)
     } catch (error) {
+      setIsLoading(false)
       console.error('Error fetching products:', error)
       setProducts([])
     }
@@ -67,6 +40,10 @@ const AdminViewProductsPage = () => {
   useEffect(() => {
     fetchProductsByCategory(category)
   }, [])
+
+  useEffect(() => {
+    fetchProductsByCategory(category)
+  }, [isDeleting])
 
   useEffect(() => {
     if (search) {
@@ -115,9 +92,15 @@ const AdminViewProductsPage = () => {
         <div
           className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:grid-cols-5 overflow-x-hidden`}
         >
-          {products.length > 0 ? (
+          {isLoading ? (
+            Array(6)
+              .fill()
+              .map((_, index) => <HomeProductSkelton key={index} />)
+          ) : products && products.length > 0 ? (
             products.map((product) => (
               <AdminProductCard
+                setIsDeleting={setIsDeleting}
+                isDeleting={isDeleting}
                 product={product}
                 pageLoading={pageLoading}
                 key={product._id}

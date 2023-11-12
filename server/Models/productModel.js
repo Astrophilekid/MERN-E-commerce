@@ -40,7 +40,7 @@ const productSchema = new mongoose.Schema({
     ],
   },
   discount: { type: Number, default: 0 },
-  Stock: {
+  stock: {
     type: Number,
     required: [true, 'Please Enter product Stock'],
     maxLength: [4, 'Stock cannot exceed 4 characters'],
@@ -61,24 +61,8 @@ const productSchema = new mongoose.Schema({
   },
   reviews: [
     {
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-        required: true,
-      },
-      name: {
-        type: String,
-        required: true,
-      },
-      rating: {
-        type: Number,
-        required: true,
-      },
-      comment: {
-        type: String,
-        required: true,
-        default: '',
-      },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Review',
     },
   ],
 })

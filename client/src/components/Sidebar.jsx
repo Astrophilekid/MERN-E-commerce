@@ -11,21 +11,30 @@ const Sidebar = () => {
   const { sidebarToggle, setSidebarToggle } = useContext(StateContext)
 
   return (
-    <>
+    <div className="z-[31]">
       <div
-        className={`fixed  ${
+        className={`fixed z-[31]  ${
           sidebarToggle ? 'block' : 'hidden'
-        } z-10 top-0 w-full  lg:hidden left-0 bottom-0 max-lg:bg-black/70  transition-all ease-in-out`}
+        } z-10 top-0 w-full   left-0 bottom-0 bg-black/70  transition-all ease-in-out`}
         onClick={() => {
           setSidebarToggle(!sidebarToggle)
         }}
-      ></div>
+      >
+        <img
+          src="./modal-close.png"
+          alt="sidebar-close"
+          className="fixed left-52 ml-3  scale-105 top-5 cursor-pointer"
+        />
+      </div>
       <div
-        className={`fixed border-r z-0 max-lg:z-10 cursor-pointer  top-32 left-0 bg-slate-100 sm:top-20  bottom-0 gap-y-1 w-52 flex flex-col   py-4 ${
+        className={`fixed z-[31] border-r  cursor-pointer  top-0 left-0 bg-slate-100   bottom-0 gap-y-1 w-52 flex flex-col   py-4 ${
           sidebarToggle ? 'translate-x-0' : '-translate-x-52'
         } transition-all ease-in-out overflow-hidden px-2`}
         style={{ background: COLORS.WHITE }}
       >
+        <div className="flex text-xl w-full rounded-md bg-purple-800 text-white font-medium gap-x-2 px-3 h-16 items-center transition-transform duration-300 hover:scale-105 active:scale-95">
+          Hello, <p className="font-bold">{'Ajesh S'}</p>
+        </div>
         <SidebarTab name="All" toLink="/" page={page} />
         <SidebarTab
           name="smartphone"
@@ -40,7 +49,7 @@ const Sidebar = () => {
           page={page}
         />
       </div>
-    </>
+    </div>
   )
 }
 export default Sidebar

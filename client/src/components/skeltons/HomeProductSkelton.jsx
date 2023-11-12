@@ -17,7 +17,6 @@ const HomeProductSkelton = () => {
       whileTap={{ scale: 0.95 }}
       className="relative -mb-2 mx-auto m-10 flex w-full my-0 sm:my-2 lg:my-4  flex-col overflow-hidden rounded-lg border border-gray-100 h-92 sm:h-[470px] px-2 pb-5  bg-white shadow-md hover:shadow-xl "
     >
-      {/* Link to the product details page */}
       <div className="h-full flex sm:flex-col">
         <div className="relative mx-3 mt-3 flex w-64 sm:w-auto h-52 sm:h-60 overflow-hidden rounded-xl ">
           <Skeleton
@@ -36,8 +35,6 @@ const HomeProductSkelton = () => {
           <Skeleton animation="wave" width="60%" />
         </div>
       </div>
-
-      {/* Add to cart button */}
     </motion.div>
   )
 }

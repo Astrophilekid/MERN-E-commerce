@@ -8,7 +8,9 @@ import Loading from '../components/Loading'
 import PageLoadingWheel from '../components/PageLoadingWheel'
 import { StateContext } from '../StateContext'
 import Pagination from '@mui/material/Pagination'
-import filterProducts from '../api'
+import { filterProducts } from '../api'
+import { motion } from 'framer-motion'
+import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
@@ -19,7 +21,8 @@ const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [isVisible, setIsVisible] = useState(false)
 
-  const { sidebarToggle, searchResults, search } = useContext(StateContext)
+  const { sidebarToggle, setSidebarToggle, searchResults, search } =
+    useContext(StateContext)
 
   const fetchAllProducts = async () => {
     setIsLoading(true)
@@ -54,6 +57,10 @@ const HomePage = () => {
       })
     }
   }
+
+  useEffect(() => {
+    fetchAllProducts()
+  }, [])
 
   const fetchProductsByCategory = async (category) => {
     try {
@@ -120,7 +127,7 @@ const HomePage = () => {
     <div className="z-0 relative ">
       {/* <HomePageBanner /> */}
       <div
-        className="flex gap-x-3 z-30 sticky -mt-4 top-0 w-full h-12 px-3 py-[4px]"
+        className="flex gap-x-3 z-30 sticky items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]"
         style={{ background: COLORS.BACKGROUND }}
       >
         <p
@@ -155,14 +162,14 @@ const HomePage = () => {
         </p>
       </div>
       <div
-        className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 ${
-          sidebarToggle && 'lg:grid-cols-3'
-        } ${
-          sidebarToggle ? 'xl:grid-cols-4' : 'xl:grid-cols-5'
-        } overflow-x-hidden`}
+        className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:grid-cols-5 overflow-x-hidden`}
         style={{ background: COLORS.CREAM }}
       >
-        {products.length > 0 ? (
+        {isLoading ? (
+          Array(6)
+            .fill()
+            .map((_, index) => <HomeProductSkelton key={index} />)
+        ) : products && products.length > 0 ? (
           products.map((product) => (
             <ProductCard
               product={product}

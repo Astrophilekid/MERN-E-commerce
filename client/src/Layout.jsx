@@ -10,9 +10,7 @@ const Layout = () => {
 
   return (
     <div
-      className={`mt-36 max-lg:ml-auto ml-${
-        sidebarToggle ? '52' : '0'
-      }  sm:mt-24 transition-all ease-in-out `}
+      className={`mt-36 sm:mt-24  max-lg:ml-auto   transition-all ease-in-out `}
     >
       <Navbar />
       <Sidebar />

@@ -1,16 +1,22 @@
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { COLORS } from '../styles/color'
+import { COLORS } from '../../../styles/color'
 import axios from 'axios'
 import { Rate } from 'antd'
-import ProductDetailsSkelton from '../components/skeltons/ProductDetailsSkelton'
+import ProductDetailsSkelton from '../../../components/skeltons/ProductDetailsSkelton'
+import AddProduct from '../../../components/AddProduct'
+import DeleteModal from '../../../components/DeleteModal'
+import Loading from '../../../components/Loading'
 
-const ProductDetailsPage = () => {
+const AdminProductDetailsPage = () => {
   const [product, setProduct] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [index, setIndex] = useState(0)
   const [rating, setRating] = useState(0)
+  const [modal, setModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteModal, setDeleteModal] = useState(false)
   const { id } = useParams()
 
   useEffect(() => {
@@ -31,6 +37,7 @@ const ProductDetailsPage = () => {
     description,
     discount,
     price,
+    softDelete,
     images = [],
     stock,
     numOfReviews,
@@ -45,6 +52,31 @@ const ProductDetailsPage = () => {
       ) : (
         <div className="flex  flex-col mt-14 max-sm:px-2 justify-center overflow-hidden transition-all ease-in-out">
           <div className="flex flex-col sm:flex-row justify-center items-center gap-x-4 md:gap-x-6 lg:gap-x-10 sm:px-2 md:mx-4 p-2 w-full">
+            {/* mobile view edit/delete icon */}
+            <div className="hidden max-sm:flex gap-x-3 h-10 w-full justify-end">
+              <button
+                className="flex justify-center items-center w-20 rounded-md text-white max-sm:w-10 p-1 bg-slate-700 hover:bg-slate-900 text-lg transition-transform duration-200 hover:scale-105 active:scale-95"
+                onClick={() => {
+                  setModal(true)
+                }}
+              >
+                <img
+                  src="/edit.png"
+                  className="object-contain h-3/4 max-sm:h-full mb-2 max-sm:mb-1"
+                  alt="edit icon"
+                />
+              </button>
+              <button
+                className="flex shadow hover:shadow-lg justify-center items-center w-20 max-sm:w-10 rounded-md transition-transform duration-200 hover:scale-105 active:scale-100 text-white bg-slate-700 hover:bg-slate-800 text-lg"
+                onClick={() => setDeleteModal(true)}
+              >
+                <img
+                  src={softDelete ? '/undo-delete.png' : '/delete.png'}
+                  className="object-contain h-3/4 "
+                  alt="delete icon"
+                />
+              </button>
+            </div>
             {/* ḷeft */}
             <div className=" flex flex-col self-start mx-auto max-h-fit items-center">
               <div className=" mb-2 object-cover  flex justify-center aspect-square w-96 sm:w-[350px rounded-md mb-5 md:w-[430px] lg:w-[530px] overflow-hidden shadow-md shadow-purple-100 p-2">
@@ -81,6 +113,31 @@ const ProductDetailsPage = () => {
 
             {/* right */}
             <div className="flex gap-y-2 max-sm:mx-3 md:px-4 mr-3 flex-col self-start w-full mx-auto px-2 mt-6 ">
+              {/* above small screen edit/delete icon */}
+              <div className="max-sm:hidden flex mr-16 gap-x-3 h-12 mb-4 w-full justify-end">
+                <button
+                  className="flex justify-center items-center w-20 rounded-md text-white bg-slate-700 hover:bg-slate-900 text-lg transition-transform duration-200 hover:scale-105 active:scale-95"
+                  onClick={() => {
+                    setModal(true)
+                  }}
+                >
+                  <img
+                    src="/edit.png"
+                    className="object-contain h-3/4 mb-2"
+                    alt="edit icon"
+                  />
+                </button>
+                <button
+                  className="flex shadow hover:shadow-lg justify-center items-center w-20 rounded-md transition-transform duration-200 hover:scale-105 active:scale-100 text-white bg-slate-700 hover:bg-slate-800 text-lg"
+                  onClick={() => setDeleteModal(true)}
+                >
+                  <img
+                    src={softDelete ? '/undo-delete.png' : '/delete.png'}
+                    className="object-contain h-3/4 "
+                    alt="delete icon"
+                  />
+                </button>
+              </div>
               <p className="text-xs text-sky-600">Brand: {brand}</p>
               <h1 className="text-xl font-medium capitalize">{name}</h1>
 
@@ -146,22 +203,6 @@ const ProductDetailsPage = () => {
                   {isExpanded ? 'Read Less' : 'Read More'}
                 </button>
               </div>
-
-              {/* buttons */}
-              <div className="flex flex-col mx-auto min-w-fit whitespace-nowrap my-4 max-w-[450px] w-full text-lg font-semibold  gap-y-4 ">
-                <button
-                  className="bg-violet-700 px-3 py-2 hover:shadow-md   sm:mx-10 rounded-lg text-lg  text-white "
-                  style={{ background: COLORS.GRADIENT }}
-                >
-                  Add to cart
-                </button>
-                <button
-                  className="bg-violet-700 px-3 hover:shadow-md  py-2 sm:mx-10 rounded-lg text-lg text-white "
-                  style={{ background: COLORS.NAV_GRADIENT }}
-                >
-                  Buy now
-                </button>
-              </div>
             </div>
           </div>
           {/* reviews */}
@@ -179,9 +220,20 @@ const ProductDetailsPage = () => {
               </p>
             )}
           </div>
+          {isDeleting && <Loading />}
+          {deleteModal && (
+            <DeleteModal
+              setDeleteModal={setDeleteModal}
+              id={_id}
+              name={name}
+              category={category}
+              softDelete={softDelete}
+              setIsDeleting={setIsDeleting}
+            />
+          )}
         </div>
       )}
     </>
   )
 }
-export default ProductDetailsPage
+export default AdminProductDetailsPage

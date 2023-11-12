@@ -16,7 +16,6 @@ const viewAllProducts = asyncHandler(async (req, res) => {
     const totalProducts = await Product.countDocuments({ softDelete: false })
 
     const products = await Product.find({ softDelete: false })
-      .populate('reviews.user', 'username')
       .limit(limit)
       .skip((page - 1) * limit)
 
@@ -47,10 +46,7 @@ const viewProduct = asyncHandler(async (req, res) => {
         message: 'product id required',
       })
     }
-    const product = await Product.findById(id).populate(
-      'reviews.user',
-      'username'
-    )
+    const product = await Product.findById(id)
 
     res.status(200).json({
       message: 'Product fetched successfully',
@@ -104,7 +100,6 @@ const viewProductsByFilter = asyncHandler(async (req, res) => {
     const totalProducts = await Product.countDocuments(query)
 
     const products = await Product.find(query)
-      .populate('reviews.user', 'username')
       .sort({ [sortBy]: sortOrder === 'asc' ? 1 : -1 })
       .limit(limit)
       .skip((page - 1) * limit)

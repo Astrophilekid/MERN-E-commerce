@@ -27,7 +27,7 @@ const Navbar = () => {
         const response = await axios.get(
           `/products/search-term/?searchTerm=${search}`
         )
-        console.log(response.data.suggestions)
+        // console.log(response.data.suggestions)
         setProductList(response.data.suggestions)
       } catch (error) {
         console.error('Could not fetch products:', error)
@@ -48,7 +48,7 @@ const Navbar = () => {
       if (data.success) {
         setSearchResults(data.product)
         setHasSearched(true)
-        console.log(data.product)
+        // console.log(data.product)
       } else {
         setSearchResults([])
       }
@@ -59,7 +59,7 @@ const Navbar = () => {
   }
 
   return (
-    <>
+    <div className="max-sm:mb-10">
       <nav
         className="absolute top-0 left-0 overflow-hidden right-0 h-32  sm:h-20 transition-all ease-in-out  flex  flex-col gap-y-2 pb-2 z-30 overflow-x-hidden"
         style={{ background: COLORS.BACKGROUND }}
@@ -67,7 +67,7 @@ const Navbar = () => {
         <div className="flex my-auto relative items-center justify-between px-2 md:px-8 sm:px-5 gap-x-5 lg:gap-x-10">
           {/* left */}
           <div className=" min-w-fit">
-            <div className="flex gap-x-8 sm:gap-x-16   items-center">
+            <div className="flex gap-x-6 ml-3 sm:gap-x-10   items-center">
               <motion.img
                 whileHover={{
                   scale: 1.05,
@@ -75,7 +75,7 @@ const Navbar = () => {
                 }}
                 whileTap={{ scale: 0.95 }}
                 src="/hamburger.png"
-                className="h-8 "
+                className="h-8 mr-2 "
                 alt="hamburger"
                 onClick={() => {
                   setSidebarToggle(!sidebarToggle)
@@ -86,7 +86,7 @@ const Navbar = () => {
                 <motion.img
                   whileTap={{ scale: 0.95 }}
                   src="/logo_nav.png"
-                  className="h-20 hidden transition lg:inline ease-in-out"
+                  className="h-20 max-md:hidden max-sm:ml-5 max-sm:scale-90 transition lg:inline ease-in-out"
                   alt="Gadget Bazaar logo"
                 />
                 <motion.img
@@ -96,7 +96,7 @@ const Navbar = () => {
                   }}
                   whileTap={{ scale: 0.9 }}
                   src="/icon.png"
-                  className="h-16 transition lg:hidden"
+                  className="h-16 transition md:hidden "
                   alt="Gadget Bazaar mobile logo"
                 />
               </Link>
@@ -139,7 +139,6 @@ const Navbar = () => {
                         key={i}
                         onClick={() => {
                           setSearch(value.name)
-                          searchProduct()
                         }}
                         className=" p-1 border-b rounded-lg hover:bg-purple-300 hover:font-medium  my-1 "
                       >
@@ -166,7 +165,7 @@ const Navbar = () => {
                 <p className="text-xl font-semibold">Account</p>
               </Link>
 
-              <div className="-mb-3 hidden sm:block">
+              <div className="-mb-3 ">
                 <h1 className="text-xl font-semibold text-white ">Orders</h1>
               </div>
 
@@ -252,7 +251,7 @@ const Navbar = () => {
           </div>
         </div>
       </nav>
-    </>
+    </div>
   )
 }
 export default Navbar
