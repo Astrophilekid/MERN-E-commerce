@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import User from '../Models/userModel.js'
 import Product from '../Models/productModel.js'
+import Cart from '../Models/cartModel.js'
 import { generateToken } from '../Utils/generateToken.js'
 import twilio from 'twilio'
 
@@ -77,6 +78,8 @@ const verifyOTP = asyncHandler(async (req, res) => {
         password,
         mobile,
       })
+
+      await Cart.create({ user: user._id, products: [] })
 
       res.status(201).json({
         message: `OTP verified and User registered successfully`,

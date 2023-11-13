@@ -1,27 +1,31 @@
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import SidebarTab from './SidebarTab'
-import { StateContext } from '../StateContext'
-import { useContext } from 'react'
 import { COLORS } from '../styles/color'
+import { setSidebarToggle } from '../slices/sidebarSlice'
+import { useSelector, useDispatch } from 'react-redux'
+import { useState } from 'react'
 
 const Sidebar = () => {
   const location = useLocation()
   const page = location.pathname.split('/')[2]
 
-  const { sidebarToggle, setSidebarToggle } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const sidebarToggle = useSelector((state) => state.sidebar.sidebarToggle)
+
+  const [logoutModal, setLogoutModal] = useState(false)
 
   return (
     <div className="z-[31]">
       <div
         className={`fixed z-[31]  ${
-          sidebarToggle ? 'block' : 'hidden'
-        } z-10 top-0 w-full   left-0 bottom-0 bg-black/70  transition-all ease-in-out`}
+          sidebarToggle ? 'block bg-black/80  ' : 'hidden bg-black/10  '
+        } z-10 top-0 w-full   left-0 bottom-0 transition-all ease-in-out `}
         onClick={() => {
-          setSidebarToggle(!sidebarToggle)
+          dispatch(setSidebarToggle())
         }}
       >
         <img
-          src="./modal-close.png"
+          src="../../assets/icons/modal-close.png"
           alt="sidebar-close"
           className="fixed left-52 ml-3  scale-105 top-5 cursor-pointer"
         />
@@ -32,10 +36,10 @@ const Sidebar = () => {
         } transition-all ease-in-out overflow-hidden px-2`}
         style={{ background: COLORS.WHITE }}
       >
-        <div className="flex text-xl w-full rounded-md bg-purple-800 text-white font-medium gap-x-2 px-3 h-16 items-center transition-transform duration-300 hover:scale-105 active:scale-95">
+        <div className="flex text-xl w-full rounded-md bg-gradient-to-r from-violet-700 to-red-400  text-white font-medium gap-x-2 px-3 h-16 items-center transition-transform duration-300 hover:scale-100 active:scale-95 mb-6">
           Hello, <p className="font-bold">{'Ajesh S'}</p>
         </div>
-        <SidebarTab name="All" toLink="/" page={page} />
+        <SidebarTab name="Home" toLink="/" page={page} />
         <SidebarTab
           name="smartphone"
           toLink="/products/smartphone"
@@ -48,6 +52,9 @@ const Sidebar = () => {
           toLink="/products/smartwatch"
           page={page}
         />
+        <button className="mt-auto mb- text-lg w-full h-12 rounded-lg border border-purple-700 font-semibold text-black">
+          logout
+        </button>
       </div>
     </div>
   )

@@ -1,16 +1,11 @@
 import axios from 'axios'
-import HomePageBanner from '../components/HomePageBanner'
 import ProductCard from '../components/ProductCard'
 import { COLORS } from '../styles/color'
-import { useContext, useEffect, useState } from 'react'
-import Skeleton from '@mui/material/Skeleton'
-import Loading from '../components/Loading'
-import PageLoadingWheel from '../components/PageLoadingWheel'
-import { StateContext } from '../StateContext'
+import { useEffect, useState } from 'react'
 import Pagination from '@mui/material/Pagination'
 import { filterProducts } from '../api'
-import { motion } from 'framer-motion'
 import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
+import { useSelector } from 'react-redux'
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
@@ -21,8 +16,8 @@ const HomePage = () => {
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [isVisible, setIsVisible] = useState(false)
 
-  const { sidebarToggle, setSidebarToggle, searchResults, search } =
-    useContext(StateContext)
+  const searchResults = useSelector((state) => state.search.searchResults)
+  const search = useSelector((state) => state.search.search)
 
   const fetchAllProducts = async () => {
     setIsLoading(true)
@@ -114,18 +109,17 @@ const HomePage = () => {
   // category style and class
   const categoryStyle = (category) => {
     if (category === selectedCategory) {
-      return `${categoryClass} bg-purple-500 text-white font-medium `
+      return `${categoryClass} bg-gradient-to-r from-violet-700 to-red-400 px-2  text-white font-medium `
     } else {
       return `${categoryClass}`
     }
   }
 
   const categoryClass =
-    'w-fit px-2 py-1 cursor-pointer text-white rounded my-1 text-center flex items-center font-medium hover:bg-purple-500'
+    'w-fit px-2 py-1 cursor-pointer text-white rounded my-1 text-center flex items-center font-medium hover:bg-gradient-to-r from-violet-700 to-red-400 px-2 '
 
   return (
     <div className="z-0 relative ">
-      {/* <HomePageBanner /> */}
       <div
         className="flex gap-x-3 z-30 sticky items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]"
         style={{ background: COLORS.BACKGROUND }}
@@ -161,8 +155,9 @@ const HomePage = () => {
           Smartwatch
         </p>
       </div>
+
       <div
-        className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:grid-cols-5 overflow-x-hidden`}
+        className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4  overflow-x-hidden`}
         style={{ background: COLORS.CREAM }}
       >
         {isLoading ? (

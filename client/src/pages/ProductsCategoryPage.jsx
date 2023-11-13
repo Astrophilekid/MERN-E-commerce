@@ -1,28 +1,37 @@
-import axios from 'axios'
 import ProductCard from '../components/ProductCard'
 import { COLORS } from '../styles/color'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Pagination from '@mui/material/Pagination'
 import { filterProducts } from '../api'
-import { StateContext } from '../StateContext'
 import { Link, useParams } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
 
-const AdminViewProductsPage = () => {
+const ProductsCategoryPage = () => {
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [page, setPage] = useState(1)
-  const [pageLoading, setPageLoading] = useState(false)
   const [totalPages, setTotalPages] = useState(1)
   const [isVisible, setIsVisible] = useState(false)
 
-  const { searchResults, search } = useContext(StateContext)
   const { category } = useParams()
 
+  const searchResults = useSelector((state) => state.search.searchResults)
+  const search = useSelector((state) => state.search.search)
+
   const fetchProductsByCategory = async (category) => {
+    setIsLoading(true)
     try {
       const response = await filterProducts(page, { category })
       setProducts(response.products)
+      setTotalPages(response.totalPages)
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 1000)
     } catch (error) {
+      setTimeout(() => {
+        setIsLoading(false)
+      }, 1000)
       console.error('Error fetching products:', error)
       setProducts([])
     }
@@ -30,7 +39,7 @@ const AdminViewProductsPage = () => {
 
   useEffect(() => {
     fetchProductsByCategory(category)
-  }, [])
+  }, [category])
 
   useEffect(() => {
     if (search) {
@@ -79,13 +88,13 @@ const AdminViewProductsPage = () => {
         <div
           className={`p-4 grid w-full h-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 xl:grid-cols-5 overflow-x-hidden`}
         >
-          {products.length > 0 ? (
+          {isLoading ? (
+            Array(6)
+              .fill()
+              .map((_, index) => <HomeProductSkelton key={index} />)
+          ) : products && products.length > 0 ? (
             products.map((product) => (
-              <ProductCard
-                product={product}
-                pageLoading={pageLoading}
-                key={product._id}
-              />
+              <ProductCard product={product} key={product._id} />
             ))
           ) : (
             <div className="w-screen  h-96 flex justify-center items-center">
@@ -121,4 +130,4 @@ const AdminViewProductsPage = () => {
     </div>
   )
 }
-export default AdminViewProductsPage
+export default ProductsCategoryPage

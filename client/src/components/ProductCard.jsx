@@ -1,23 +1,18 @@
 import { motion } from 'framer-motion'
-import { useState } from 'react'
 import { COLORS } from '../styles/color'
 import { Link } from 'react-router-dom'
 import { Rate } from 'antd'
 
-const ProductCard = ({ product, pageLoading }) => {
+const ProductCard = ({ product }) => {
   const {
     _id,
     name,
-    category,
-    brand,
-    description,
     discount,
     price,
     images = [],
     stock,
     numOfReviews,
     avgRating,
-    reviews,
   } = product
   const transition = { type: 'spring', duration: 0.3 }
 

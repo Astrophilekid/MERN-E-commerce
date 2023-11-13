@@ -1,24 +1,17 @@
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { COLORS } from '../styles/color'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import Sidebar from './Sidebar'
-import { StateContext } from '../StateContext'
-import Autocomplete from '@mui/material/Autocomplete'
-import TextField from '@mui/material/TextField'
 import axios from 'axios'
-
+import { setSidebarToggle } from '../slices/sidebarSlice'
+import { useSelector, useDispatch } from 'react-redux'
+import { setSearchResults, setSearch } from '../slices/searchSlice'
 const Navbar = () => {
   const [productList, setProductList] = useState([])
   const [hasSearched, setHasSearched] = useState(false)
 
-  const {
-    sidebarToggle,
-    setSidebarToggle,
-    setSearchResults,
-    search,
-    setSearch,
-  } = useContext(StateContext)
+  const dispatch = useDispatch()
+  const search = useSelector((state) => state.search.search)
 
   useEffect(() => {
     setHasSearched(false)
@@ -46,11 +39,11 @@ const Navbar = () => {
       )
 
       if (data.success) {
-        setSearchResults(data.product)
+        dispatch(setSearchResults(data.product))
         setHasSearched(true)
         // console.log(data.product)
       } else {
-        setSearchResults([])
+        dispatch(setSearchResults([]))
       }
     } catch (error) {
       console.error('Error fetching product:', error)
@@ -78,8 +71,7 @@ const Navbar = () => {
                 className="h-8 mr-2 "
                 alt="hamburger"
                 onClick={() => {
-                  setSidebarToggle(!sidebarToggle)
-                  // console.log(sidebarToggle)
+                  dispatch(setSidebarToggle())
                 }}
               />
               <Link to="/" className="-ml-8">
@@ -111,7 +103,7 @@ const Navbar = () => {
                 value={search}
                 className="placeholder:text-base "
                 placeholder="Search here..."
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => dispatch(setSearch(e.target.value))}
               />
               <div
                 className="h-10 -ml-1   flex w-16 justify-center items-center  z-[1] search__div"
@@ -120,7 +112,7 @@ const Navbar = () => {
               >
                 <motion.img
                   whileHover={{
-                    scale: 1.0,
+                    scale: 1.05,
                     transition: { duration: 0.1 },
                   }}
                   whileTap={{ scale: 0.95 }}
@@ -138,7 +130,7 @@ const Navbar = () => {
                       <p
                         key={i}
                         onClick={() => {
-                          setSearch(value.name)
+                          dispatch(setSearch(value.name))
                         }}
                         className=" p-1 border-b rounded-lg hover:bg-purple-300 hover:font-medium  my-1 "
                       >
@@ -181,7 +173,7 @@ const Navbar = () => {
                   {' 1'}
                 </p>
                 <img
-                  src="./cart.png"
+                  src="../../assets/icons/cart.png"
                   className="w-10 min-w-[25px] sm:min-w-[35px]"
                   alt="cart"
                 />
@@ -199,7 +191,7 @@ const Navbar = () => {
                 className=".search__input h-full focus:border-2 focus:border-red-400 placeholder:text-base"
                 placeholder="Search here..."
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={(e) => dispatch(setSearch(e.target.value))}
               />
               <div
                 className="h-full px-2 flex search__div items-center -ml-1 search__div"
@@ -225,7 +217,7 @@ const Navbar = () => {
                       <p
                         key={i}
                         onClick={() => {
-                          setSearch(value.name)
+                          dispatch(setSearch(value.name))
                           searchProduct()
                         }}
                         className=" p-1 border-b rounded-lg hover:bg-purple-300 hover:font-medium  my-1 "
@@ -237,7 +229,7 @@ const Navbar = () => {
                     <div
                       className=" p-1 border-b rounded-lg flex   italic  my-1 "
                       onClick={() => {
-                        setSearch(search)
+                        dispatch(setSearch(search))
                         searchProduct()
                       }}
                     >
