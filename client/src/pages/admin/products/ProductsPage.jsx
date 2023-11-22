@@ -2,10 +2,10 @@ import { useState } from 'react'
 import AdminViewProductsPage from './AdminViewProductsPage'
 import Fab from '@mui/material/Fab'
 import AddIcon from '@mui/icons-material/Add'
-import AddProduct from '../../../components/AddProduct'
 import Loading from '../../../components/Loading'
 import AdminProductCategoryCard from '../../../components/admin/AdminProductCategoryCard'
 import { COLORS } from '../../../styles/color'
+import AddProduct from '../../../components/admin/AddProduct.jsx'
 
 const ProductsPage = () => {
   const [modal, setModal] = useState(false)

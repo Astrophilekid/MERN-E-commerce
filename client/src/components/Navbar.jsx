@@ -6,12 +6,18 @@ import axios from 'axios'
 import { setSidebarToggle } from '../slices/sidebarSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSearchResults, setSearch } from '../slices/searchSlice'
+import { setCart } from '../slices/cartSlice'
+import { fetchCart } from '../api'
 const Navbar = () => {
   const [productList, setProductList] = useState([])
   const [hasSearched, setHasSearched] = useState(false)
 
   const dispatch = useDispatch()
   const search = useSelector((state) => state.search.search)
+  const user = useSelector((state) => state.user.user)
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn)
+
+  let cartQuantity = useSelector((state) => state.cart.totalQuantity)
 
   useEffect(() => {
     setHasSearched(false)
@@ -32,6 +38,27 @@ const Navbar = () => {
     }
   }, [search])
 
+  // cart fetch
+  const fetchData = async () => {
+    try {
+      const { success, totalQuantity } = await fetchCart()
+      // console.log(success, cart, totalPrice, totalQuantity)
+      if (success) {
+        dispatch(
+          setCart({
+            totalQuantity,
+          })
+        )
+      }
+    } catch (error) {
+      console.error('something went wrong while fetching cart')
+    }
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+  // cart fetch end
   const searchProduct = async () => {
     try {
       const { data } = await axios.get(
@@ -53,10 +80,7 @@ const Navbar = () => {
 
   return (
     <div className="max-sm:mb-10">
-      <nav
-        className="absolute top-0 left-0 overflow-hidden right-0 h-32  sm:h-20 transition-all ease-in-out  flex  flex-col gap-y-2 pb-2 z-30 overflow-x-hidden"
-        style={{ background: COLORS.BACKGROUND }}
-      >
+      <nav className="absolute top-0 left-0 overflow-hidden right-0 h-32  sm:h-20 transition-all ease-in-out  flex  flex-col gap-y-2 pb-2 z-30 overflow-x-hidden bg-secondary">
         <div className="flex my-auto relative items-center justify-between px-2 md:px-8 sm:px-5 gap-x-5 lg:gap-x-10">
           {/* left */}
           <div className=" min-w-fit">
@@ -152,7 +176,7 @@ const Navbar = () => {
             <div className="flex justify-between gap-x-4 sm:gap-x-8   items-center">
               <Link to={'/'} className="whitespace-nowrap text-white ">
                 <p className="text-xs leading-none">
-                  Hello, {true ? 'Ajesh s' : 'sign in'}
+                  Hello, {isLoggedIn ? user.name : 'sign in'}
                 </p>
                 <p className="text-xl font-semibold">Account</p>
               </Link>
@@ -161,23 +185,25 @@ const Navbar = () => {
                 <h1 className="text-xl font-semibold text-white ">Orders</h1>
               </div>
 
-              <motion.div
-                whileHover={{
-                  scale: 1.05,
-                  transition: { duration: 0.1 },
-                }}
-                whileTap={{ scale: 0.95 }}
-                className="relative p-2"
-              >
-                <p className="absolute top-0 right-2 text-xs bg-red-400 text-white font-bold rounded-full px-[5px]">
-                  {' 1'}
-                </p>
-                <img
-                  src="../../assets/icons/cart.png"
-                  className="w-10 min-w-[25px] sm:min-w-[35px]"
-                  alt="cart"
-                />
-              </motion.div>
+              <Link to={isLoggedIn ? '/cart' : '/login'}>
+                <motion.div
+                  whileHover={{
+                    scale: 1.05,
+                    transition: { duration: 0.1 },
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="relative p-2"
+                >
+                  <p className="absolute top-0 right-2 text-xs bg-red-400 text-white font-bold rounded-full px-[5px]">
+                    {cartQuantity}
+                  </p>
+                  <img
+                    src="../../assets/icons/cart.png"
+                    className="w-10 min-w-[25px] sm:min-w-[35px]"
+                    alt="cart"
+                  />
+                </motion.div>
+              </Link>
             </div>
           </div>
         </div>

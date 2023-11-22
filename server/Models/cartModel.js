@@ -17,11 +17,14 @@ const cartSchema = new mongoose.Schema(
         quantity: {
           type: Number,
           required: true,
-          default: 1,
         },
       },
     ],
     totalPrice: {
+      type: Number,
+      default: 0,
+    },
+    totalQuantity: {
       type: Number,
       default: 0,
     },
@@ -40,6 +43,11 @@ cartSchema.pre('save', async function (next) {
   )
 
   this.totalPrice = productPrices.reduce((total, price) => total + price, 0)
+
+  this.totalQuantity = this.products.reduce(
+    (total, item) => total + item.quantity,
+    0
+  )
 
   next()
 })

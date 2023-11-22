@@ -4,6 +4,8 @@ import './../styles/FormStyles.css'
 import { Link, useNavigate } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import { COLORS } from '../styles/color'
+import { useDispatch, useSelector } from 'react-redux'
+import { setUser } from '../slices/userSlice.js'
 
 const LoginPage = () => {
   const [email, setEmail] = useState('')
@@ -11,6 +13,7 @@ const LoginPage = () => {
   const [isFormValid, setIsFormValid] = useState(true)
 
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const login = async (e) => {
     e.preventDefault()
@@ -26,7 +29,10 @@ const LoginPage = () => {
 
       // console.log(data)
       if (data.success) {
+        // console.log(data)
         alert(`login successful`)
+        const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 3
+        dispatch(setUser({ user: data.user, exp: expirationTime }))
         navigate('/')
       } else {
         alert('invalid email or password')

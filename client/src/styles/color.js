@@ -6,7 +6,6 @@ export const COLORS = {
   LIGHT_RED: '#FC777C',
   WHITE: '#FFFFFF',
   PINK: '#DD6397',
-  PINKISH_WHITE: '#F6EEFE',
   GRADIENT:
     'linear-gradient(16deg, rgba(80,42,148,1) 0%, rgba(149,53,151,1) 35%, rgba(252,119,124,1) 100%)',
   BACKGROUND: 'rgb(80,42,148)',

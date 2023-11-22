@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
-import FormInput from './FormInput'
-import { COLORS } from '../styles/color'
+import FormInput from '../FormInput'
+import { COLORS } from '../../styles/color'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import Loading from './Loading'
+import Loading from '../Loading'
 
 const AddProduct = ({ setModal, setLoading }) => {
   const [name, setName] = useState('')
@@ -295,7 +295,7 @@ const AddProduct = ({ setModal, setLoading }) => {
       </div>
       <img
         onClick={() => setModal(false)}
-        src="/modal-close.png"
+        src="../../../assets/icons/modal-close.png"
         className="absolute cursor-pointer top-2 z-15 right-5 lg:right-20 rounded-full border border-slate-500 scale-105"
         alt="modal close png"
       />

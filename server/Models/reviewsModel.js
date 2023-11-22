@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import Product from './productModel.js'
 
 const reviewSchema = new mongoose.Schema(
   {
@@ -21,7 +22,7 @@ const reviewSchema = new mongoose.Schema(
       required: true,
       enum: [1, 2, 3, 4, 5],
     },
-    comment: {
+    review: {
       type: String,
       required: true,
       default: '',
@@ -29,6 +30,30 @@ const reviewSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+  }
+)
+
+reviewSchema.post(
+  'save',
+  { document: true, query: false },
+  async function (review) {
+    try {
+      const product = await Product.findById(review.product)
+      if (!product) {
+        return
+      }
+
+      const reviews = await Review.find({ product: product._id })
+      const totalRatings = reviews.reduce(
+        (total, review) => total + review.rating,
+        0
+      )
+      product.avgRating = totalRatings / reviews.length
+      product.numOfReviews = reviews.length
+      await product.save()
+    } catch (error) {
+      console.error(error)
+    }
   }
 )
 

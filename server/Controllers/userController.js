@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import User from '../Models/userModel.js'
 import Product from '../Models/productModel.js'
+import Address from '../Models/addressModel.js'
 import Cart from '../Models/cartModel.js'
 import { generateToken } from '../Utils/generateToken.js'
 import twilio from 'twilio'
@@ -129,9 +130,16 @@ const login = asyncHandler(async (req, res) => {
       maxAge: 3 * 24 * 60 * 60 * 1000,
     })
 
+    const userWithoutPassword = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+    }
+
     res.status(201).json({
       message: 'user logged in successfully',
       success: true,
+      user: userWithoutPassword,
     })
   } else {
     res.status(401).json({
@@ -144,7 +152,7 @@ const login = asyncHandler(async (req, res) => {
 
 // @desc   Logout user
 // route   POST/api/v1/users/logout
-// @access Public
+// @access Private
 const logout = asyncHandler(async (req, res) => {
   res.cookie('token', '', {
     httpOnly: true,
@@ -154,4 +162,90 @@ const logout = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Log out successful' })
 })
 
-export { registerUser, verifyOTP, login, logout }
+//@desc Add Address
+//route POST/api/v1/users/add-address
+//@access Private
+const addAddress = asyncHandler(async (req, res) => {
+  const userId = req.user.id
+  if (!userId) {
+    res.status(400).json({
+      message: 'User not authenticated',
+      success: false,
+    })
+  }
+  const { addressDetails } = req.body
+
+  if (!addressDetails) {
+    res.status(400).json({
+      message: 'Address required',
+      success: false,
+    })
+  }
+  try {
+    const address = await Address.create({
+      user: userId,
+      addressDetails,
+    })
+
+    res.status(201).json({
+      message: 'Address added successfully',
+      success: true,
+      address,
+    })
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to add address',
+      success: false,
+      error: error.message,
+    })
+  }
+})
+
+//@desc Update user address
+//@route PUT/api/v1/users/update-address/:id
+//@access private
+const updateAddress = asyncHandler(async (req, res) => {
+  const userId = req.user.id
+  if (!userId) {
+    res.status(400).json({
+      message: 'User not authenticated',
+      success: false,
+    })
+  }
+  const addressId = req.params.id
+  const { addressDetails } = req.body
+
+  if (!addressId || !addressDetails) {
+    res.status(400).json({
+      message: 'address ID/data is required',
+      success: false,
+    })
+  }
+  try {
+    const updatedAddress = await Address.findByIdAndUpdate(
+      addressId,
+      { addressDetails },
+      { new: true }
+    )
+    if (!updatedAddress) {
+      res.status(404).json({
+        message: 'Address not found',
+        success: false,
+      })
+    } else {
+      res.status(200).json({
+        message: 'Address updated successfully',
+        success: true,
+        updatedAddress,
+      })
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: 'Failed to update the address',
+      success: false,
+      error: error.message,
+    })
+  }
+})
+
+export { registerUser, verifyOTP, login, logout, addAddress, updateAddress }

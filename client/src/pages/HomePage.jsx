@@ -26,6 +26,7 @@ const HomePage = () => {
       const { data } = await axios.get(
         `/products/view-all-products?page=${page}`
       )
+      // console.log(data)
 
       if (data.success) {
         setTotalPages(data.totalPages)
@@ -55,7 +56,7 @@ const HomePage = () => {
 
   useEffect(() => {
     fetchAllProducts()
-  }, [])
+  }, [page])
 
   const fetchProductsByCategory = async (category) => {
     try {
@@ -109,19 +110,19 @@ const HomePage = () => {
   // category style and class
   const categoryStyle = (category) => {
     if (category === selectedCategory) {
-      return `${categoryClass} bg-gradient-to-r from-violet-700 to-red-400 px-2  text-white font-medium `
+      return `${categoryClass} bg-gradient-to-br from-red-400 to-violet-700`
     } else {
       return `${categoryClass}`
     }
   }
 
   const categoryClass =
-    'w-fit px-2 py-1 cursor-pointer text-white rounded my-1 text-center flex items-center font-medium hover:bg-gradient-to-r from-violet-700 to-red-400 px-2 '
+    'w-fit px-2 py-1 cursor-pointer text-white rounded my-1 text-center flex items-center font-medium hover:bg-gradient-to-br from-red-400 to-violet-700 px-2 '
 
   return (
     <div className="z-0 relative ">
       <div
-        className="flex gap-x-3 z-30 sticky items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]"
+        className="flex gap-x-3 z-30 sticky  items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]"
         style={{ background: COLORS.BACKGROUND }}
       >
         <p

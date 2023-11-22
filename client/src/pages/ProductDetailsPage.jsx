@@ -1,27 +1,66 @@
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { COLORS } from '../styles/color'
 import axios from 'axios'
 import { Rate } from 'antd'
 import ProductDetailsSkelton from '../components/skeltons/ProductDetailsSkelton'
+import { useDispatch, useSelector } from 'react-redux'
+import { setCart } from '../slices/cartSlice'
+import ReviewModal from '../components/modals/ReviewModal'
+import { CircularProgress } from '@mui/material'
+import { checkTokenExpiration } from '../slices/userSlice'
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState({})
+  const [avgRating, setAvgRating] = useState(0)
+  const [numOfReviews, setNumOfReviews] = useState(0)
+  const [reviews, setReviews] = useState([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false)
   const [isExpanded, setIsExpanded] = useState(false)
   const [index, setIndex] = useState(0)
-  const [rating, setRating] = useState(0)
+  const [reviewModal, setReviewModal] = useState(false)
   const { id } = useParams()
+
+  const dispatch = useDispatch()
+  const user = useSelector((state) => state.user.user)
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn)
+
+  const navigate = useNavigate()
+  useEffect(() => {
+    dispatch(checkTokenExpiration())
+  }, [dispatch])
+
+  const hasReviewed = reviews.some((review) => review.user === user.id)
 
   useEffect(() => {
     setIsLoading(true)
     axios.get(`/products/${id}`).then(({ data }) => {
       setProduct(data.product)
+      setNumOfReviews(data.product.numOfReviews)
+      setAvgRating(data.product.avgRating)
       setTimeout(() => {
         setIsLoading(false)
       }, 500)
     })
   }, [])
+
+  const fetchReviews = async () => {
+    setIsReviewsLoading(true)
+    try {
+      const { data } = await axios.get(`/reviews/${id}`)
+      const sortedReviews = data.reviews.sort((a, b) => {
+        if (a.user === user.id) return -1
+        if (b.user === user.id) return 1
+        return 0
+      })
+      setReviews(sortedReviews)
+      setAvgRating(data.avgRating)
+      setNumOfReviews(data.numOfReviews)
+      setIsReviewsLoading(false)
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    }
+  }
 
   const {
     _id,
@@ -33,17 +72,50 @@ const ProductDetailsPage = () => {
     price,
     images = [],
     stock,
-    numOfReviews,
-    avgRating,
-    reviews = [],
   } = product
+
+  useEffect(() => {
+    fetchReviews()
+  }, [])
+
+  const addToCart = async () => {
+    try {
+      const { data } = await axios.post(`/cart/add/${_id}`)
+      console.log(data)
+      if (data.success) {
+        console.log('Product added to the cart successfully!')
+        dispatch(setCart(data.cart))
+        navigate('/cart')
+      } else {
+        alert(`add to cart failed`)
+      }
+    } catch (error) {}
+  }
+
+  const deleteReview = async (reviewId) => {
+    try {
+      const { data } = await axios.delete(`/reviews/delete-review/${reviewId}
+      `)
+      if (data.success) {
+        const updatedReviews = reviews.filter(
+          (review) => review._id !== reviewId
+        )
+        setReviews(updatedReviews)
+        setNumOfReviews((prevNumOfReviews) => prevNumOfReviews - 1)
+      } else {
+        console.error('Failed to delete review')
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error)
+    }
+  }
 
   return (
     <>
       {isLoading ? (
         <ProductDetailsSkelton />
       ) : (
-        <div className="flex  flex-col mt-14 max-sm:px-2 justify-center overflow-hidden transition-all ease-in-out">
+        <div className="flex p-2 flex-col mt-14 max-sm:px-2 justify-center overflow-hidden transition-all ease-in-out">
           <div className="flex flex-col sm:flex-row justify-center items-center gap-x-4 md:gap-x-6 lg:gap-x-10 sm:px-2 md:mx-4 p-2 w-full">
             {/* ḷeft */}
             <div className=" flex flex-col self-start mx-auto max-h-fit items-center">
@@ -52,7 +124,6 @@ const ProductDetailsPage = () => {
                   src={images[index]}
                   alt="main product image"
                   className="object-contain"
-                  // style={{ objectFit: 'contain' }}
                   loading="lazy"
                 />
               </div>
@@ -64,8 +135,8 @@ const ProductDetailsPage = () => {
                         index === ind ? '600' : '50'
                       } rounded-xl  `}
                       key={ind}
+                      onMouseOver={() => setIndex(ind)}
                       onClick={() => setIndex(ind)}
-                      // onMouseOver={() => setIndex(ind)}
                     >
                       <img
                         src={value}
@@ -86,7 +157,7 @@ const ProductDetailsPage = () => {
 
               {/* rating */}
               <div className="flex gap-x-3 max-md:flex-col whitespace-nowrap text-sky-600">
-                <Rate allowHalf defaultValue={avgRating} disabled />
+                <Rate allowHalf value={avgRating} disabled />
                 {numOfReviews !== 0 ? (
                   <p className="whitespace-nowrap">
                     {numOfReviews} {numOfReviews === 1 ? 'review' : 'reviews'}
@@ -101,13 +172,17 @@ const ProductDetailsPage = () => {
                 <div className="flex flex-col mt-3 gap-y-0 mb-2">
                   <div className="flex">
                     <p className="font-semibold">{'\u20B9 '}</p>
-                    <p className="text-2xl sm:text-3xl  font-bold text-slate-900">{`${Math.round(
-                      (price * (100 - discount)) / 100
-                    )}`}</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-slate-900">
+                      {`${Math.round(
+                        (price * (100 - discount)) / 100
+                      ).toLocaleString('en-IN')}`}
+                    </p>
                   </div>
                   <div className="flex mt-1 text-gray-500 line-through">
                     <p className="font-medium text-xs">{'\u20B9 '}</p>
-                    <p className="text-sm sm:text-md  font-medium  h-3 ">{`${price}`}</p>
+                    <p className="text-sm sm:text-md  font-medium  h-3 ">{`${price.toLocaleString(
+                      'en-IN'
+                    )}`}</p>
                   </div>
                 </div>
               ) : (
@@ -118,13 +193,13 @@ const ProductDetailsPage = () => {
               )}
 
               <div className="flex items-center  gap-x-3">
-                <h2>Stock status:</h2>
+                <h2>Stock :</h2>
                 <p
                   className={`text-${
-                    stock < 50 ? 'red-500' : 'sky-600'
+                    stock < 5 ? 'red-500' : 'sky-600'
                   } text whitespace-nowrap `}
                 >
-                  {stock < 50 ? `Hurry, only ${stock} left!` : 'Available'}
+                  {stock < 5 ? `Hurry, only ${stock} left!` : 'Available'}
                 </p>
               </div>
 
@@ -150,34 +225,108 @@ const ProductDetailsPage = () => {
               {/* buttons */}
               <div className="flex flex-col mx-auto min-w-fit whitespace-nowrap my-4 max-w-[450px] w-full text-lg font-semibold  gap-y-4 ">
                 <button
-                  className="bg-violet-700 px-3 py-2 hover:shadow-md   sm:mx-10 rounded-lg text-lg  text-white "
-                  style={{ background: COLORS.GRADIENT }}
+                  className="bg-secondary px-3 py-2  transition-all hover:shadow-lg sm:mx-10 rounded-lg text-lg  hover:text-[19px]  active:text-lg text-white"
+                  onClick={addToCart}
                 >
                   Add to cart
                 </button>
-                <button
-                  className="bg-violet-700 px-3 hover:shadow-md  py-2 sm:mx-10 rounded-lg text-lg text-white "
-                  style={{ background: COLORS.NAV_GRADIENT }}
-                >
+                <button className="bg-white border-accent border-2 shadow-lg text-accent px-3 hover:shadow-lg  hover:bg-accent transition-all hover:text-white  py-2 sm:mx-10 rounded-lg text-lg hover:text-xl active:text-lg  ">
                   Buy now
                 </button>
               </div>
             </div>
           </div>
+          {reviewModal && (
+            <ReviewModal
+              productId={_id}
+              fetchReviews={fetchReviews}
+              setReviewModal={() => setReviewModal(false)}
+            />
+          )}
           {/* reviews */}
-          <div className="bg-violet-50 mx-4 flex flex-col py-3 my-3 items-start rounded-lg p-2 ">
-            <p className="text-lg font-medium ml-1 mb-3">Reviews</p>
-            {reviews.length > 0 ? (
-              <div className="bg-violet-200 rounded-2xl p-2 w-full">
-                <h2>Ajesh</h2>
-                <p>rating: 4/5</p>
-                <p>Best phone of the year</p>
+          <div className="flex max-sm:flex-col mt-10  w-full h-fit px-3">
+            {/* rating */}
+            <div className="w-full flex flex-col p-3 border h-fit mx-auto max-sm:w-11/12 border-violet-200 sm:w-2/5 rounded-md shadow-md justify-start items-center sm:mt-3">
+              <div className="flex flex-col w-full  items-center mb-5">
+                <div className=" ">
+                  <Rate
+                    allowHalf
+                    value={Number(avgRating)}
+                    disabled
+                    className="scale-125 text-yellow-300"
+                  />
+                </div>
+                <h1 className="text-center my-1 text-gray-500 ">
+                  {numOfReviews} reviews
+                </h1>
+                <div className="text-lg text-center max-md:text-base my-3">
+                  {reviews.length > 0 ? (
+                    <>
+                      <p>
+                        This product got average rating of{' '}
+                        {avgRating.toFixed(1)}
+                        /5
+                      </p>
+                    </>
+                  ) : (
+                    <p>{`No ratings yet. Be the first to review!`}</p>
+                  )}
+                </div>
               </div>
-            ) : (
-              <p className="text-sm font-semibold text-slate-500">
-                No reviews yet
-              </p>
-            )}
+
+              <button
+                className={`bg-secondary ${
+                  hasReviewed && 'opacity-60'
+                }  w-4/5  mt-auto  py-2  transition-all hover:shadow-lg sm:mx-10 rounded-lg text-md ${
+                  hasReviewed && 'cursor-pointer'
+                } whitespace-nowrap  h
+              active:scale-95 text-white`}
+                disabled={hasReviewed}
+                onClick={() => setReviewModal(true)}
+              >
+                {hasReviewed ? 'already reviewed!' : 'Add a review'}
+              </button>
+            </div>
+
+            {/* reviews of the product */}
+            <div className="bg-violet-50 w-full sm:w-3/5 mx-4 flex flex-col py-3 my-3 items-start rounded-lg p-2 min-h-fit max-h-96 overflow-y-auto ">
+              <p className="text-lg font-medium ml-1 mb-3">Reviews</p>
+              {isReviewsLoading ? (
+                <div className="bg-violet-100 py-4 flex justify-center mb-2 rounded-2xl h-28 items-center p-2 w-full">
+                  <CircularProgress style={{ scale: '0.8' }} />
+                </div>
+              ) : reviews.length > 0 ? (
+                reviews.map((review) => (
+                  <div
+                    key={review._id}
+                    className="relative bg-violet-100 py-4 mb-2 rounded-2xl p-2 w-full"
+                  >
+                    {user?.id === review.user && isLoggedIn && (
+                      <button
+                        className="absolute right-3 top-2"
+                        onClick={() => {
+                          deleteReview(review._id)
+                        }}
+                      >
+                        <img src="/delete.png" alt="delete" className="h-5" />
+                      </button>
+                    )}
+                    <h2 className="font-semibold">{review.name}</h2>
+                    <Rate
+                      allowHalf
+                      defaultValue={review.rating}
+                      style={{ scale: '0.8', marginLeft: '-1rem' }}
+                      disabled
+                    />
+                    <p>{review.review}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm font-semibold text-slate-500">
+                  No reviews yet
+                </p>
+              )}
+            </div>
           </div>
         </div>
       )}

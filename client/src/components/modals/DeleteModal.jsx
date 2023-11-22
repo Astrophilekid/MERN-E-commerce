@@ -1,6 +1,6 @@
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { handleToggleDelete } from '../api'
+import { handleToggleDelete } from '../../api'
 
 const DeleteModal = ({
   id,

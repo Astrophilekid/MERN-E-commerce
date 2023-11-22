@@ -1,7 +1,10 @@
 import { motion } from 'framer-motion'
 import { COLORS } from '../styles/color'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Rate } from 'antd'
+import axios from 'axios'
+import { useDispatch } from 'react-redux'
+import { setCart } from '../slices/cartSlice'
 
 const ProductCard = ({ product }) => {
   const {
@@ -14,7 +17,27 @@ const ProductCard = ({ product }) => {
     numOfReviews,
     avgRating,
   } = product
+
   const transition = { type: 'spring', duration: 0.3 }
+
+  const dispatch = useDispatch()
+  const navigate = useNavigate()
+
+  const addToCart = async () => {
+    try {
+      const { data } = await axios.post(`/cart/add/${_id}`)
+      console.log(data)
+      if (data.success) {
+        console.log('Product added to the cart successfully!')
+        dispatch(setCart(data.cart))
+        navigate('/cart')
+      } else {
+        alert(`add to cart failed`)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   return (
     <>
@@ -65,16 +88,18 @@ const ProductCard = ({ product }) => {
             ) : (
               <div className="flex">
                 <p className="mt-2 font-semibold">{'\u20B9 '}</p>
-                <p className="text-2xl sm:text-3xl my-2 font-bold text-slate-900">{`${price}`}</p>
+                <p className="text-2xl sm:text-3xl my-2 font-bold text-slate-900">
+                  {price.toLocaleString('en-IN')}
+                </p>
               </div>
             )}
 
             <p
               className={`${
-                stock < 50 ? 'text-red-500' : 'hidden'
+                stock < 10 ? 'text-red-500' : 'text-violet-500'
               } text-sm whitespace-nowrap mb-2`}
             >
-              {stock < 50 ? `Hurry, only ${stock} left!` : 'Available'}
+              {stock < 10 ? `Hurry, only ${stock} left!` : 'Available'}
             </p>
           </div>
         </Link>
@@ -88,6 +113,7 @@ const ProductCard = ({ product }) => {
           whileTap={{ scale: 1 }}
           className="items-center hidden sm:flex justify-center rounded-md  px-5 mx-3 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300 hover:text-md "
           style={{ background: COLORS.BACKGROUND }}
+          onClick={addToCart}
         >
           Add to cart
         </motion.button>

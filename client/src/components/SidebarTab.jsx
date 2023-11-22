@@ -12,29 +12,29 @@ const SidebarTab = ({ name, toLink, page }) => {
   return (
     <motion.div
       whileHover={{
-        scale: 1.05,
+        scale: 1.02,
         transition: { duration: 0.1 },
       }}
       whileTap={{ scale: 0.95 }}
       onClick={() => {
         dispatch(setSidebarToggle())
       }}
-      style={{ background: COLORS.CREAM }}
+      className=""
     >
       <Link
         to={toLink}
-        className={`flex justify-start  items-center w-full   h-14 text-lg
+        className={`flex justify-start text-black rounded-lg items-center w-full   h-14 text-lg
 
         ${
           name === category || (category === undefined && name === 'Home')
-            ? 'bg-violet-900 text-white'
+            ? 'bg-violet-500 font-semibold text-white'
             : ''
         }  hover:shadow-md pl-5 ${
           name !== category &&
           !(category === undefined && name === 'Home') &&
-          'hover:bg-violet-300'
+          'hover:bg-violet-50'
         }
-        font-semibold  border-b capitalize`}
+           capitalize`}
       >
         {name}
       </Link>

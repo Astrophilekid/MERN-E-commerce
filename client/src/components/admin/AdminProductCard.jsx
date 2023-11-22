@@ -5,11 +5,11 @@ import { Link, useNavigate } from 'react-router-dom'
 import HomeProductSkelton from '../skeltons/HomeProductSkelton'
 import NavigationIcon from '@mui/icons-material/Navigation'
 
-import AddProduct from '../AddProduct'
+import AddProduct from './AddProduct'
 import Loading from '../Loading'
 import { Rate } from 'antd'
 import { handleToggleDelete } from '../../api'
-import DeleteModal from '../DeleteModal'
+import DeleteModal from '../modals/DeleteModal'
 
 const AdminProductCard = ({
   product,

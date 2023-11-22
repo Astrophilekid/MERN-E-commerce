@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import axios from 'axios'
-// import './../styles/FormStyles.css'
 import { Link, useNavigate } from 'react-router-dom'
 import FormInput from '../../components/FormInput.jsx'
 import { COLORS } from '../../styles/color'

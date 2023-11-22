@@ -3,7 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import User from '../Models/userModel.js'
 import Product from '../Models/productModel.js'
-import { generateToken } from '../Utils/generateToken.js'
+import Review from '../Models/reviewsModel.js'
 
 //@desc Get All Products
 //@route GET/api/v1/products/view-all-products
@@ -35,7 +35,7 @@ const viewAllProducts = asyncHandler(async (req, res) => {
 })
 
 //@desc Get Specific Products
-//@route GET/api/v1/products/view-product/:id
+//@route GET/api/v1/products/:id
 //@access public
 const viewProduct = asyncHandler(async (req, res) => {
   try {
@@ -43,20 +43,28 @@ const viewProduct = asyncHandler(async (req, res) => {
     if (!id) {
       return res.status(400).json({
         success: false,
-        message: 'product id required',
+        message: 'Product ID is required',
       })
     }
+
     const product = await Product.findById(id)
 
+    if (!product) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found',
+      })
+    }
+
     res.status(200).json({
-      message: 'Product fetched successfully',
       success: true,
+      message: 'Product fetched successfully',
       product,
     })
   } catch (error) {
     res.status(500).json({
-      status: false,
-      error: 'Could not fetch Product' + error,
+      success: false,
+      error: 'Could not fetch Product: ' + error.message,
     })
   }
 })

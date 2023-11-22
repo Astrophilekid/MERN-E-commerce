@@ -59,24 +59,6 @@ const productSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  reviews: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Review',
-    },
-  ],
-})
-
-productSchema.pre('save', function (next) {
-  if (this.reviews.length > 0) {
-    let sum = this.reviews.reduce((total, review) => {
-      return total + review.rating
-    }, 0)
-    this.avgRating = sum / this.reviews.length
-  } else {
-    this.avgRating = 0
-  }
-  next()
 })
 
 const Product = mongoose.model('Product', productSchema)

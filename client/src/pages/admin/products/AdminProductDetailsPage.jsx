@@ -4,8 +4,8 @@ import { COLORS } from '../../../styles/color'
 import axios from 'axios'
 import { Rate } from 'antd'
 import ProductDetailsSkelton from '../../../components/skeltons/ProductDetailsSkelton'
-import AddProduct from '../../../components/AddProduct'
-import DeleteModal from '../../../components/DeleteModal'
+import AddProduct from '../../../components/admin/AddProduct'
+import DeleteModal from '../../../components/modals/DeleteModal'
 import Loading from '../../../components/Loading'
 
 const AdminProductDetailsPage = () => {
@@ -97,7 +97,7 @@ const AdminProductDetailsPage = () => {
                       } rounded-xl  `}
                       key={ind}
                       onClick={() => setIndex(ind)}
-                      // onMouseOver={() => setIndex(ind)}
+                      onMouseOver={() => setIndex(ind)}
                     >
                       <img
                         src={value}

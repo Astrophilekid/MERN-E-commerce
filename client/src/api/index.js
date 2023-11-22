@@ -36,4 +36,27 @@ const handleToggleDelete = async (id) => {
   }
 }
 
-export { filterProducts, handleToggleDelete }
+const fetchCart = async () => {
+  try {
+    const { data } = await axios.get('/cart/view-cart')
+    if (data.success && data.cart) {
+      return {
+        success: data.success,
+        cart: data.cartItems.products,
+        totalPrice: data.cartItems.totalPrice,
+        totalQuantity: data.cartItems.totalQuantity,
+      }
+    } else if (data.success && !data.cart) {
+      return {
+        success: data.success,
+        cart: [],
+        totalPrice: 0,
+        totalQuantity: 0,
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching cart:', error)
+  }
+}
+
+export { filterProducts, handleToggleDelete, fetchCart }
