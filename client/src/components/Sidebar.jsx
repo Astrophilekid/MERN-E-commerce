@@ -19,6 +19,15 @@ const Sidebar = () => {
 
   const [logoutModal, setLogoutModal] = useState(false)
 
+  const handleProfileClick = () => {
+    if (isLoggedIn) {
+      dispatch(setSidebarToggle())
+      navigate('/profile')
+    } else {
+      navigate('/login')
+    }
+  }
+
   return (
     <div className="z-[31] ">
       <div
@@ -43,9 +52,7 @@ const Sidebar = () => {
       >
         <div
           className="flex text-xl w-full rounded-md text-violet-600 font-medium gap-x-2 px-3 h-16 items-center transition-all duration-300 hover:scale-100 active:scale-95 mb-6"
-          onClick={() => {
-            !isLoggedIn && navigate('/login')
-          }}
+          onClick={handleProfileClick}
         >
           Hello,{' '}
           <p className="font-bold">{isLoggedIn ? user.name : 'Sign In'}</p>

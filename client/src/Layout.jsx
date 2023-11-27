@@ -2,7 +2,7 @@ import { Outlet } from 'react-router-dom'
 
 import Sidebar from './components/Sidebar.jsx'
 import { StateContext } from './StateContext.jsx'
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import Navbar from './components/Navbar.jsx'
 
 const Layout = () => {

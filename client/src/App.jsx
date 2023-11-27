@@ -21,6 +21,11 @@ import ProductsCategoryPage from './pages/ProductsCategoryPage.jsx'
 import AdminViewProductsPage from './pages/admin/products/AdminViewProductsPage.jsx'
 import AdminProductDetailsPage from './pages/admin/products/AdminProductDetailsPage.jsx'
 import CartPage from './pages/CartPage.jsx'
+import UserOrdersPage from './pages/UserOrdersPage.jsx'
+import WalletPage from './pages/WalletPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+import ForgotPassword from './pages/ForgotPassword.jsx'
+import ResetPassword from './pages/ResetPassword.jsx'
 
 axios.defaults.baseURL = 'http://localhost:4000/api/v1'
 axios.defaults.withCredentials = true
@@ -33,6 +38,8 @@ const App = () => {
           <Routes>
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/admin-login" element={<AdminLoginPage />} />
 
             {/* user layout */}
@@ -44,6 +51,9 @@ const App = () => {
                 element={<ProductsCategoryPage />}
               />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/orders" element={<UserOrdersPage />} />
+              <Route path="/wallet" element={<WalletPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
             </Route>
 
             {/* admin layout */}

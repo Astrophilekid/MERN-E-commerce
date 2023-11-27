@@ -3,7 +3,7 @@ import { COLORS } from '../styles/color'
 import { useEffect, useState } from 'react'
 import Pagination from '@mui/material/Pagination'
 import { filterProducts } from '../api'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
 
@@ -13,6 +13,8 @@ const ProductsCategoryPage = () => {
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isVisible, setIsVisible] = useState(false)
+
+  const navigate = useNavigate()
 
   const { category } = useParams()
 
@@ -71,15 +73,17 @@ const ProductsCategoryPage = () => {
   return (
     <div className="pt-3 relative" style={{ background: COLORS.CREAM }}>
       <div className="flex px-5   items-center justify-between">
-        <div className="flex w-full" style={{ background: COLORS.CREAM }}>
-          <Link
-            to={'/'}
-            className="bg-gradient-to-r from-violet-700 to-red-400 px-2 w-fit rounded-xl py-1 font-medium text-slate-200 hover:text-white flex items-center gap-x-2 transition-transform duration-200 hover:scale-105 active:scale-95"
+        <div
+          className="flex w-full gap-x-0"
+          style={{ background: COLORS.CREAM }}
+        >
+          <button
+            className="bg-secondary ml-4 hover:bg-accent mb-1 items-center  flex mt-2 rounded-full text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
+            onClick={() => navigate(-1)}
           >
             <img src="/go back.png" alt="go back" className="h-6" />
-            <h2>back</h2>
-          </Link>
-          <h1 className="text-3xl ml-3 text-slate-700 capitalize italic font-semibold ">
+          </button>
+          <h1 className="text-3xl ml-1  text-slate-700 capitalize italic font-semibold ">
             "{category}"
           </h1>
         </div>

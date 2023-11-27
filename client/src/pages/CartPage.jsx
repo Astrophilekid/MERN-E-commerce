@@ -64,8 +64,7 @@ const CartPage = () => {
                   paymentId: response.razorpay_payment_id,
                 })
                 .then(({ data }) => {
-                  const transaction = data
-                  console.log(transaction)
+                  navigate('/orders')
                 })
                 .catch((error) => {
                   console.log(error)
@@ -102,11 +101,10 @@ const CartPage = () => {
         <>
           <div className="text-2xl sm:text-3xl font-semibold h-14  rounded-sm w-full border-b flex items-center text-violet-700 mb-5 pl-5">
             <button
-              className="bg-red-400 px-2 py-1 flex mt-2 rounded-md text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
+              className="bg-secondary hover:bg-accent mb-1 items-center  flex mt-2 rounded-full text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
               onClick={() => navigate(-1)}
             >
               <img src="/go back.png" alt="go back" className="h-6" />
-              <h2>back</h2>
             </button>
             My Cart
             <img
@@ -131,11 +129,10 @@ const CartPage = () => {
             >
               <div className="text-2xl sm:text-3xl font-semibold h-14  rounded-sm w-full border-b flex items-center text-violet-700 mb-5 pl-5">
                 <button
-                  className="bg-red-400 px-2 py-1 flex mt-2 rounded-md text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
+                  className="bg-secondary hover:bg-accent mb-1 items-center  flex mt-2 rounded-full text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
                   onClick={() => navigate(-1)}
                 >
                   <img src="/go back.png" alt="go back" className="h-6" />
-                  <h2>back</h2>
                 </button>
                 My Cart
                 <img
@@ -180,7 +177,7 @@ const CartPage = () => {
                   </div>
                 </div>
                 <button
-                  className="w-full h-10 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-white transition-all active:scale-95 hover:text-[19px] hover:scale-100  "
+                  className="w-full h-10 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-gray-200 transition-all active:scale-95 hover:text-white   "
                   onClick={() => {
                     setAddressModal(true)
                   }}
@@ -207,7 +204,7 @@ const CartPage = () => {
                 </div>
                 {/* right */}
                 <button
-                  className="w-1/5 ml-auto h-full m-2 my-2 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-white hover:text-[18px] transition-all active:scale-95  hover:shadow-lg"
+                  className="w-1/5 ml-auto h-full m-2 my-2 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-white hover:text-white  transition-all active:scale-95  hover:shadow-lg"
                   onClick={() => {
                     setAddressModal(true)
                   }}

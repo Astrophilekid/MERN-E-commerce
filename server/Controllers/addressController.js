@@ -89,6 +89,7 @@ const updateAddress = asyncHandler(async (req, res) => {
   }
 
   const { addressDetails } = req.body
+  console.log('recieved new address' + addressDetails)
 
   if (!addressDetails) {
     res.status(400).json({

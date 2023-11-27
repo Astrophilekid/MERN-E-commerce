@@ -3,6 +3,7 @@ import Cart from '../Models/cartModel.js'
 import Order from '../Models/ordersModel.js'
 import Product from '../Models/productModel.js'
 import Address from '../Models/addressModel.js'
+import Wallet from '../Models/walletModel.js'
 import Transaction from '../Models/transactionModel.js'
 import { createOrderFn } from '../Utils/razorpay.js'
 
@@ -12,6 +13,8 @@ import { createOrderFn } from '../Utils/razorpay.js'
 const createOrder = asyncHandler(async (req, res) => {
   try {
     const userId = req.user.id
+    const { useWallet } = req.body
+
     const cart = await Cart.findOne({ user: userId })
 
     if (!cart) {
@@ -26,8 +29,19 @@ const createOrder = asyncHandler(async (req, res) => {
         .json({ success: false, error: 'Address not found.' })
     }
 
-    const total = cart.totalPrice
-    const products = cart.products
+    const products = cart.products.map((item) => ({
+      product: item.product,
+      quantity: item.quantity,
+    }))
+
+    const wallet = await Wallet.findOne({ userId })
+
+    let total = cart.totalPrice
+
+    if (useWallet && wallet) {
+      total -= wallet.balance
+      wallet.balance = 0
+    }
 
     const order = await createOrderFn(total)
 
@@ -41,11 +55,12 @@ const createOrder = asyncHandler(async (req, res) => {
       userId: userId,
       orderId: order.id,
       products: products,
-      shippingAddress: {},
+      shippingAddress: address,
       total: total,
       status: 'Pending',
     })
     const savedOrder = await newOrder.save()
+    await wallet.save()
 
     res.status(200).json({
       message: 'order created successfully',

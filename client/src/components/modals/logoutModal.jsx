@@ -31,13 +31,13 @@ const LogoutModal = ({ setLogoutModal }) => {
         </div>
         <div className="h-1/4 flex gap-x-2 w-full ">
           <button
-            className={`border border-red-600 w-2/4 bg-red-100 flex items-center justify-center py-3 rounded hover:bg-red-600 hover:text-white font-semibold hover:shadow transition-all `}
+            className={`border border-red-600 w-2/4 bg-red-100 flex items-center justify-center py-3 rounded hover:bg-red-600 hover:text-white font-semibold active:scale-95 hover:shadow transition-all `}
             onClick={logout}
           >
             logout
           </button>
           <button
-            className="border border-blue-600 bg-blue-100 flex items-center justify-center w-2/4 py-3 rounded hover:bg-blue-600 hover:text-white font-semibold hover:shadow transition-all "
+            className="border active:scale-95 border-blue-600 bg-blue-100 flex items-center justify-center w-2/4 py-3 rounded hover:bg-blue-600 hover:text-white font-semibold hover:shadow transition-all "
             onClick={() => {
               setLogoutModal(false)
               dispatch(setSidebarToggle())

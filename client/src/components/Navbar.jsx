@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react'
 import { COLORS } from '../styles/color'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { setSidebarToggle } from '../slices/sidebarSlice'
 import { useSelector, useDispatch } from 'react-redux'
 import { setSearchResults, setSearch } from '../slices/searchSlice'
 import { setCart } from '../slices/cartSlice'
-import { fetchCart } from '../api'
+import { fetchCart, searchProductApi } from '../api'
 const Navbar = () => {
   const [productList, setProductList] = useState([])
   const [hasSearched, setHasSearched] = useState(false)
@@ -18,6 +18,8 @@ const Navbar = () => {
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn)
 
   let cartQuantity = useSelector((state) => state.cart.totalQuantity)
+
+  const navigate = useNavigate()
 
   useEffect(() => {
     setHasSearched(false)
@@ -58,19 +60,20 @@ const Navbar = () => {
   useEffect(() => {
     fetchData()
   }, [])
+
   // cart fetch end
   const searchProduct = async () => {
     try {
-      const { data } = await axios.get(
-        `/products/searchProduct?productName=${search}`
-      )
+      const data = await searchProductApi(search)
 
       if (data.success) {
         dispatch(setSearchResults(data.product))
         setHasSearched(true)
+        navigate('/')
         // console.log(data.product)
       } else {
         dispatch(setSearchResults([]))
+        navigate('/')
       }
     } catch (error) {
       console.error('Error fetching product:', error)
@@ -80,7 +83,9 @@ const Navbar = () => {
 
   return (
     <div className="max-sm:mb-10">
-      <nav className="absolute top-0 left-0 overflow-hidden right-0 h-32  sm:h-20 transition-all ease-in-out  flex  flex-col gap-y-2 pb-2 z-30 overflow-x-hidden bg-secondary">
+      <nav
+        className={`absolute top-0 left-0 overflow-hidden right-0 h-20 max-sm:h-32 transition-all ease-in-out  flex  flex-col gap-y-2 pb-2 z-30 overflow-x-hidden bg-secondary`}
+      >
         <div className="flex my-auto relative items-center justify-between px-2 md:px-8 sm:px-5 gap-x-5 lg:gap-x-10">
           {/* left */}
           <div className=" min-w-fit">
@@ -102,7 +107,7 @@ const Navbar = () => {
                 <motion.img
                   whileTap={{ scale: 0.95 }}
                   src="/logo_nav.png"
-                  className="h-20 max-md:hidden max-sm:ml-5 max-sm:scale-90 transition lg:inline ease-in-out"
+                  className="h-20 max-md:hidden max-sm:ml-5 scale-[0.6] transition lg:inline ease-in-out"
                   alt="Gadget Bazaar logo"
                 />
                 <motion.img
@@ -112,7 +117,7 @@ const Navbar = () => {
                   }}
                   whileTap={{ scale: 0.9 }}
                   src="/icon.png"
-                  className="h-16 transition md:hidden "
+                  className="h-16 scale-[0.7] transition md:hidden "
                   alt="Gadget Bazaar mobile logo"
                 />
               </Link>
@@ -174,16 +179,16 @@ const Navbar = () => {
           {/* right */}
           <div className=" flex items-center">
             <div className="flex justify-between gap-x-4 sm:gap-x-8   items-center">
-              <Link to={'/'} className="whitespace-nowrap text-white ">
+              <Link to={'/profile'} className="whitespace-nowrap text-white ">
                 <p className="text-xs leading-none">
                   Hello, {isLoggedIn ? user.name : 'sign in'}
                 </p>
                 <p className="text-xl font-semibold">Account</p>
               </Link>
 
-              <div className="-mb-3 ">
+              <Link to={'/orders'} className="-mb-3 ">
                 <h1 className="text-xl font-semibold text-white ">Orders</h1>
-              </div>
+              </Link>
 
               <Link to={isLoggedIn ? '/cart' : '/login'}>
                 <motion.div
@@ -209,7 +214,9 @@ const Navbar = () => {
         </div>
 
         {/* mobile search */}
-        <div className="sm:hidden transition-all ease-in-out px-4 w-full flex ">
+        <div
+          className={`transition-all ease-in-out px-4 w-full hidden max-sm:flex `}
+        >
           <div className="flex flex-col  items-center  rounded-md w-full  h-11 ">
             <div className="w-full flex items-center   h-full">
               <input
@@ -221,6 +228,9 @@ const Navbar = () => {
               />
               <div
                 className="h-full px-2 flex search__div items-center -ml-1 search__div"
+                onClick={() => {
+                  searchProduct()
+                }}
                 style={{ background: COLORS.GRADIENT, color: 'white' }}
               >
                 <motion.img

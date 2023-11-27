@@ -59,4 +59,17 @@ const fetchCart = async () => {
   }
 }
 
-export { filterProducts, handleToggleDelete, fetchCart }
+//search navbar
+const searchProductApi = async (search) => {
+  try {
+    const { data } = await axios.get(
+      `/products/searchProduct?productName=${search}`
+    )
+    return data
+  } catch (error) {
+    console.error('Error fetching product:', error)
+    return { error: error.message }
+  }
+}
+
+export { filterProducts, handleToggleDelete, fetchCart, searchProductApi }

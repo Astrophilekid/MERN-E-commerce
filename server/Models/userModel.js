@@ -9,6 +9,11 @@ const userSchema = new mongoose.Schema(
       maxLength: [30, 'Name cannot exceed 30 characters'],
       minLength: [4, 'Name should contain at least 4 characters'],
     },
+    image: {
+      type: String,
+      default:
+        'https://upload.wikimedia.org/wikipedia/commons/7/7c/Profile_avatar_placeholder_large.png?20150327203541',
+    },
     email: {
       type: String,
       required: [true, 'Email is required'],
@@ -16,7 +21,6 @@ const userSchema = new mongoose.Schema(
     },
     mobile: {
       type: String,
-      required: [true, 'Mobile number is required'],
       // unique: [true, 'This mobile number already exists'],
     },
     password: {
@@ -33,19 +37,27 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    resetToken: {
+      type: String,
+      default: null,
+    },
+    resetTokenExp: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 )
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
-    return next()
-  }
+// userSchema.pre('save', async function (next) {
+//   if (!this.isModified('password')) {
+//     return next()
+//   }
 
-  const salt = await bcrypt.genSalt(10)
-  this.password = await bcrypt.hash(this.password, salt)
-})
+//   const salt = await bcrypt.genSalt(10)
+//   this.password = await bcrypt.hash(this.password, salt)
+// })
 
 userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password)

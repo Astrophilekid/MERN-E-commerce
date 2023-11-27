@@ -2,11 +2,13 @@ import asyncHandler from 'express-async-handler'
 import dotenv from 'dotenv'
 dotenv.config()
 import User from '../Models/userModel.js'
-import Product from '../Models/productModel.js'
 import Address from '../Models/addressModel.js'
 import Cart from '../Models/cartModel.js'
+import Wallet from '../Models/walletModel.js'
 import { generateToken } from '../Utils/generateToken.js'
 import twilio from 'twilio'
+import crypto from 'crypto'
+import bcrypt from 'bcrypt'
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -73,10 +75,12 @@ const verifyOTP = asyncHandler(async (req, res) => {
         code: otp,
       })
     if (verifiedResponse.status === 'approved') {
+      const salt = await bcrypt.genSalt(10)
+      const encryptedPassword = await bcrypt.hash(password, salt)
       const user = await User.create({
         name,
         email,
-        password,
+        password: encryptedPassword,
         mobile,
       })
 
@@ -162,90 +166,137 @@ const logout = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: 'Log out successful' })
 })
 
-//@desc Add Address
-//route POST/api/v1/users/add-address
+//@desc Get wallet and its history
+//@route GET/api/v1/users/wallet
 //@access Private
-const addAddress = asyncHandler(async (req, res) => {
+const getWallet = asyncHandler(async (req, res) => {
   const userId = req.user.id
+
   if (!userId) {
-    res.status(400).json({
-      message: 'User not authenticated',
+    return res.status(401).json({
       success: false,
+      message: 'User not authorized',
     })
   }
-  const { addressDetails } = req.body
 
-  if (!addressDetails) {
-    res.status(400).json({
-      message: 'Address required',
-      success: false,
-    })
-  }
   try {
-    const address = await Address.create({
-      user: userId,
-      addressDetails,
-    })
-
-    res.status(201).json({
-      message: 'Address added successfully',
-      success: true,
-      address,
-    })
-  } catch (error) {
-    res.status(500).json({
-      message: 'Failed to add address',
-      success: false,
-      error: error.message,
-    })
-  }
-})
-
-//@desc Update user address
-//@route PUT/api/v1/users/update-address/:id
-//@access private
-const updateAddress = asyncHandler(async (req, res) => {
-  const userId = req.user.id
-  if (!userId) {
-    res.status(400).json({
-      message: 'User not authenticated',
-      success: false,
-    })
-  }
-  const addressId = req.params.id
-  const { addressDetails } = req.body
-
-  if (!addressId || !addressDetails) {
-    res.status(400).json({
-      message: 'address ID/data is required',
-      success: false,
-    })
-  }
-  try {
-    const updatedAddress = await Address.findByIdAndUpdate(
-      addressId,
-      { addressDetails },
-      { new: true }
-    )
-    if (!updatedAddress) {
-      res.status(404).json({
-        message: 'Address not found',
-        success: false,
-      })
-    } else {
-      res.status(200).json({
-        message: 'Address updated successfully',
-        success: true,
-        updatedAddress,
-      })
+    let wallet = await Wallet.findOne({ userId })
+    if (!wallet) {
+      wallet = await Wallet.create({ userId })
     }
+    return res.status(200).json({
+      success: true,
+      message: 'wallet fetched successfully',
+      wallet,
+    })
   } catch (error) {
-    res.status(500).json({
-      message: 'Failed to update the address',
+    console.error('Error fetching/creating wallet:', error)
+    res
+      .status(500)
+      .json({ success: false, message: 'Server error while fetching wallet' })
+  }
+})
+
+//@desc Get user profile
+//@route GET/api/v1/users/profile
+//@access Private
+const getProfile = asyncHandler(async (req, res) => {
+  const userId = req.user.id
+
+  if (!userId) {
+    return res.status(401).json({
       success: false,
-      error: error.message,
+      message: 'User not authorized',
+    })
+  }
+
+  try {
+    const user = await User.findById(userId)
+    return res.status(200).json({
+      success: true,
+      message: 'Profile fetched successfully',
+      user,
+    })
+  } catch (error) {
+    console.error('Error fetching  profile:', error)
+    res.status(500).json({
+      success: false,
+      message: 'Server error while fetching user profile',
     })
   }
 })
 
-export { registerUser, verifyOTP, login, logout, addAddress, updateAddress }
+//@desc Forgot password
+//@route POST/api/v1/users/forgot-password
+//@access Private
+const forgotPassword = asyncHandler(async (req, res) => {
+  try {
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+    if (!user) {
+      return res.status(404).json({ message: 'user not found', success: false })
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex')
+    user.resetToken = resetToken
+    user.resetTokenExp = Date.now() + 1000 * 6 * 10
+
+    await user.save()
+    res
+      .status(200)
+      .json({ resetToken, message: 'Password reset token sent', success: true })
+  } catch (error) {
+    console.error('Error generating reset token', error)
+    res.status(500).json({
+      message: 'An error occurred while generating the reset token : ' + error,
+      success: false,
+    })
+  }
+})
+
+//@desc Verify token and Reset Password
+//@route POST/api/v1/users/reset-password
+//@access Private
+const resetPassword = asyncHandler(async (req, res) => {
+  try {
+    const { newPassword, resetToken } = req.body
+
+    const user = await User.findOne({
+      resetToken,
+      resetTokenExp: { $gt: Date.now() },
+    })
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: 'Invalid or expired reset token', success: false })
+    }
+    const salt = await bcrypt.genSalt(10)
+    const encryptedPassword = await bcrypt.hash(newPassword, salt)
+
+    user.password = encryptedPassword
+    user.resetToken = null
+    user.resetTokenExp = null
+    await user.save()
+
+    res
+      .status(200)
+      .json({ success: true, message: 'password reset successfully' })
+  } catch (error) {
+    console.error('error resetting password', error)
+    res.status(500).json({
+      error: 'An error occurred while resetting password' + error.message,
+    })
+  }
+})
+
+export {
+  registerUser,
+  verifyOTP,
+  login,
+  logout,
+  getWallet,
+  getProfile,
+  forgotPassword,
+  resetPassword,
+}

@@ -9,6 +9,7 @@ import Product from '../Models/productModel.js'
 //@access Private
 const viewCart = asyncHandler(async (req, res) => {
   const userId = req.user.id
+
   const cartItems = await Cart.findOne({ user: userId })
     .populate('products.product')
     .exec()

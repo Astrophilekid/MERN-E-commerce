@@ -3,7 +3,7 @@ import ProductCard from '../components/ProductCard'
 import { COLORS } from '../styles/color'
 import { useEffect, useState } from 'react'
 import Pagination from '@mui/material/Pagination'
-import { filterProducts } from '../api'
+import { filterProducts, searchProductApi } from '../api'
 import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
 import { useSelector } from 'react-redux'
 
@@ -81,6 +81,7 @@ const HomePage = () => {
   useEffect(() => {
     if (search) {
       setProducts(searchResults)
+      setTotalPages(1)
     } else {
       setProducts((prev) => [...prev])
     }

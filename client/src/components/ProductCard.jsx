@@ -111,8 +111,7 @@ const ProductCard = ({ product }) => {
             transition: { duration: 0.1 },
           }}
           whileTap={{ scale: 1 }}
-          className="items-center hidden sm:flex justify-center rounded-md  px-5 mx-3 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300 hover:text-md "
-          style={{ background: COLORS.BACKGROUND }}
+          className="items-center hidden sm:flex justify-center rounded-md  px-5 mx-3 py-2.5 text-center text-sm font-medium text-white focus:outline-none focus:ring-4 focus:ring-blue-300 hover:text-md bg-secondary"
           onClick={addToCart}
         >
           Add to cart

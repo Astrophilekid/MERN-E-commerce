@@ -13,15 +13,18 @@ import { reviewRouter } from './Routes/reviewRoutes.js'
 import { paymentRouter } from './Routes/paymentRoutes.js'
 import { addressRouter } from './Routes/addressRoutes.js'
 import './Utils/node-crone.js'
+import { ordersRouter } from './Routes/ordersRoutes.js'
 
 connectDb()
 
 const port = process.env.PORT || 4000
 
-// const __filename = fileURLToPath(import.meta.url)
-// const __dirname = dirname(__filename)
-
 const app = express()
+
+app.use((req, res, next) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups')
+  next()
+})
 
 app.use(
   cors({
@@ -41,6 +44,7 @@ app.use('/api/v1/cart', cartRouter)
 app.use('/api/v1/payment', paymentRouter)
 app.use('/api/v1/reviews', reviewRouter)
 app.use('/api/v1/address', addressRouter)
+app.use('/api/v1/orders', ordersRouter)
 
 //error handling middlewares
 app.use(notFound)

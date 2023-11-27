@@ -140,15 +140,17 @@ const RegisterPage = () => {
 
             <hr className="my-8 border-t-2 border-gray-200" />
 
-            <p className=" text-center -mt-2 mb-5 text-md font-normal">
-              Already have an account?{''}
-              <Link
-                to="/login"
-                className="text-purple-800  p-1 rounded-xl italic font-semibold  hover:text-purple-800 hover:underline"
-              >
-                Sign in
-              </Link>
-            </p>
+            <div className="flex flex-col items-center justify-around">
+              <p className=" text-center -mt-2 mb-5 text-md font-normal">
+                Already have an account?{''}
+                <Link
+                  to="/login"
+                  className="text-purple-800  p-1 rounded-xl italic font-semibold  hover:text-purple-800 hover:underline"
+                >
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
         </div>
       )}

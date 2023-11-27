@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import addressSchema from './addressModel.js'
 
 const orderSchema = new mongoose.Schema(
   {
@@ -21,7 +20,7 @@ const orderSchema = new mongoose.Schema(
         },
         quantity: {
           type: Number,
-          default: 1,
+          required: true,
         },
       },
     ],
@@ -31,7 +30,7 @@ const orderSchema = new mongoose.Schema(
     },
     shippingAddress: {
       type: Object,
-      default: null,
+      required: true,
     },
     total: {
       type: Number,
@@ -40,7 +39,7 @@ const orderSchema = new mongoose.Schema(
     paymentMethod: String,
     status: {
       type: String,
-      enum: ['Pending', 'Placed', 'Shipped', 'Delivered'],
+      enum: ['Pending', 'Placed', 'Shipped', 'Delivered', 'Cancelled'],
       default: 'Placed',
     },
     delivery: {
@@ -48,6 +47,14 @@ const orderSchema = new mongoose.Schema(
       default: function () {
         return new Date(Date.now() + 5 * 24 * 60 * 60 * 1000)
       },
+    },
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
+    reason: {
+      type: String,
+      required: true,
     },
   },
   { timestamps: true }

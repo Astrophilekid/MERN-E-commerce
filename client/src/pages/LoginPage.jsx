@@ -45,6 +45,11 @@ const LoginPage = () => {
     }
   }
 
+  const handleLoginWithGoogle = async () => {
+    const user = await loginWithGoogle()
+    console.log(user)
+  }
+
   return (
     <div
       className="h-screen p-4 w-full flex justify-center text-black  flex-col pb-10 items-center gap-5"
