@@ -85,7 +85,12 @@ const LoginPage = () => {
             pattern="^(?=.*[0-9])(?=.*[a-zA-Z])[a-zA-Z0-9!@#$%^&*]{6,16}$"
             isFormValid={isFormValid}
           />
-
+          <Link
+            to="/forgot-password"
+            className="self-end text-sm font-medium text-blue-400 hover:text-blue-700"
+          >
+            forgot password?
+          </Link>
           <button
             className="w-full py-2 text-white rounded-lg font-bold  text-sm mt-5 hover:bg-red-800"
             style={{ background: COLORS.GRADIENT }}

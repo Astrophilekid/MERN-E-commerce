@@ -26,6 +26,7 @@ import WalletPage from './pages/WalletPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
+import AccountPage from './pages/AccountPage.jsx'
 
 axios.defaults.baseURL = 'http://localhost:4000/api/v1'
 axios.defaults.withCredentials = true
@@ -51,6 +52,7 @@ const App = () => {
                 element={<ProductsCategoryPage />}
               />
               <Route path="/cart" element={<CartPage />} />
+              <Route path="/account" element={<AccountPage />} />
               <Route path="/orders" element={<UserOrdersPage />} />
               <Route path="/wallet" element={<WalletPage />} />
               <Route path="/profile" element={<ProfilePage />} />

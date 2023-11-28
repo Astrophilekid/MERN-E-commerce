@@ -179,7 +179,7 @@ const Navbar = () => {
           {/* right */}
           <div className=" flex items-center">
             <div className="flex justify-between gap-x-4 sm:gap-x-8   items-center">
-              <Link to={'/profile'} className="whitespace-nowrap text-white ">
+              <Link to={'/account'} className="whitespace-nowrap text-white ">
                 <p className="text-xs leading-none">
                   Hello, {isLoggedIn ? user.name : 'sign in'}
                 </p>
