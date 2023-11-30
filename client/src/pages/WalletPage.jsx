@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 import CartSkelton from '../components/skeltons/CartSkelton'
+import WalletCard from '../components/WalletCard'
 
 const WalletPage = () => {
   const [isWalletLoading, setIsWalletLoading] = useState(true)
@@ -16,6 +17,7 @@ const WalletPage = () => {
       const { data } = await axios.get('/users/wallet')
       // console.log(data)
       if (data.success) {
+        // console.log(data)
         setWallet(data.wallet.balance)
         setHistory(data.wallet.history)
         setTimeout(() => {
@@ -87,7 +89,7 @@ const WalletPage = () => {
 
               {!isWalletLoading && history?.length > 0 ? (
                 history.map((history, i) => (
-                  <WalletCard wallet={history} key={i} />
+                  <WalletCard history={history} key={i} />
                 ))
               ) : (
                 <div className="w-full h-96  flex flex-col items-center justify-center text-xl font-medium text-gray-700">

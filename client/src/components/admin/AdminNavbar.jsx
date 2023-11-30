@@ -13,7 +13,6 @@ const style =
 const AdminNavbar = () => {
   const location = useLocation()
   const page = location.pathname.split('/')[2]
-  // console.log(page)
 
   return (
     <div
@@ -57,7 +56,7 @@ const AdminNavbar = () => {
         <Link
           to="/admin/profile"
           className={`${style} mr-2 lg:mr-5 self-end ml-auto text-${
-            page === 'orders' ? 'white' : 'slate-500'
+            page === 'profile' ? 'white' : 'slate-500'
           }`}
         >
           Admin

@@ -4,9 +4,8 @@ dotenv.config()
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
 import { errorHandler, notFound } from './Middlewares/errorHandler.js'
-import connectDb from './Config/dbConnection.js'
 import { userRouter } from './Routes/userRoutes.js'
-import { adminRouter } from './Routes/adminRoutes.js'
+import { adminRouter } from './Routes/Admin/adminRoutes.js'
 import { productsRouter } from './Routes/productRoutes.js'
 import { cartRouter } from './Routes/cartRoutes.js'
 import { reviewRouter } from './Routes/reviewRoutes.js'
@@ -14,6 +13,7 @@ import { paymentRouter } from './Routes/paymentRoutes.js'
 import { addressRouter } from './Routes/addressRoutes.js'
 import './Utils/node-crone.js'
 import { ordersRouter } from './Routes/ordersRoutes.js'
+import connectDb from './Config/dbConnection.js'
 
 connectDb()
 
@@ -37,8 +37,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 
-app.use('/api/v1/users', userRouter)
 app.use('/api/v1/admin', adminRouter)
+app.use('/api/v1/users', userRouter)
 app.use('/api/v1/products', productsRouter)
 app.use('/api/v1/cart', cartRouter)
 app.use('/api/v1/payment', paymentRouter)

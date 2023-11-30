@@ -65,7 +65,7 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
     setIsBuyNowEnabled(false)
     const { data } = await axios.post('/address/add', { addressDetails })
     if (data.success) {
-      console.log(data)
+      // console.log(data)
       await fetchAddress()
       setIsBuyNowEnabled(true)
     } else {
@@ -78,7 +78,7 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
     const { data } = await axios.put('/address/update', {
       addressDetails,
     })
-    console.log(data)
+    // console.log(data)
     if (data.success) {
       await fetchAddress()
       setIsBuyNowEnabled(true)
@@ -188,7 +188,7 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
                 !isBuyNowEnabled
                   ? 'bg-gray-700 cursor-wait'
                   : 'bg-gradient-to-tr from-violet-700 to-red-400'
-              }  mt-7 self-end  h-10  flex justify-center  items-center text-lg shadow-md  rounded text-white transition-all active:scale-95  hover:scale-100  `}
+              }  mt-7 self-end  h-10  flex justify-center  items-center text-lg shadow-md  rounded text-white transition-all active:scale-95    `}
               type="submit"
               disabled={!isBuyNowEnabled}
               onClick={
@@ -201,7 +201,7 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
             >
               {isAddressFetched
                 ? isAddressChanged
-                  ? 'Update'
+                  ? 'Update Address'
                   : 'Buy Now'
                 : 'Add Address'}
             </button>

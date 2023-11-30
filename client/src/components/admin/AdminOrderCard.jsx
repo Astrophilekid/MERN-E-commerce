@@ -1,19 +1,34 @@
 import { useState } from 'react'
-import Loading from './Loading'
-import OrderCancelModal from './modals/OrderCancelModal'
+import axios from 'axios'
 
-const OrderCard = ({ order, openModal }) => {
+const AdminOrderCard = ({
+  order,
+  openModal,
+  setIsOrdersLoading,
+  setStatus,
+}) => {
   const { total, status, date, delivery, products, _id } = order
-  const [confirmModal, setConfirmModal] = useState(false)
+
+  const updateStatus = async (e) => {
+    setIsOrdersLoading(true)
+    try {
+      const { data } = await axios.put(`/admin/orders/update-status/${_id}`, {
+        newStatus: e.target.value,
+      })
+      if (data.success) {
+        setIsOrdersLoading(false)
+        setStatus(data.order.status)
+      }
+    } catch (error) {
+      setIsOrdersLoading(false)
+    }
+  }
 
   return (
     <div
       className={`flex max-h-fit max-sm:pr-4 cursor-pointer h-32  mb-3 rounded-lg border-violet-100 p-2 border  overflow-hidden transition-all justify-between w-full lg:w-[90%] xl:w-[80%]`}
     >
       {/* left */}
-      {confirmModal && (
-        <OrderCancelModal setConfirmModal={setConfirmModal} id={_id} />
-      )}
 
       {products.length > 0 && (
         <div
@@ -48,7 +63,9 @@ const OrderCard = ({ order, openModal }) => {
               <img
                 src={product.product.images[0]}
                 alt="cart product image"
-                className="object-contain max-h-full max-w-full"
+                className={`object-contain ${
+                  products.length > 1 ? 'max-h-[70%]' : 'max-h-full'
+                } max-w-full`}
               />
             </div>
           ))}
@@ -106,17 +123,20 @@ const OrderCard = ({ order, openModal }) => {
       {/* right */}
       <div
         className={`w-1/6 ${
-          (status === 'Cancelled' || status === 'Delivered') && 'hidden'
+          status === 'Cancelled' && 'hidden'
         } flex rounded-lg justify-center items-center gap-y-3`}
       >
-        <button
-          className="items-center justify-center rounded-md bg-white border border-red-500  px-5 mx-3 py-2.5 text-center text-sm  text-red-500   font-bold hover:text-white hover:bg-red-600 whitespace-pre-wrap transition-all active:scale-95 "
-          onClick={() => setConfirmModal(true)}
+        <select
+          className="rounded-md bg-white border border-blue-500 px-3 py-2 text-sm text-blue-500 font-bold hover:text-white hover:bg-blue-600 transition-all "
+          value={status}
+          onChange={(e) => updateStatus(e)}
         >
-          cancel order
-        </button>
+          <option value="Placed">Placed</option>
+          <option value="Shipped">Shipped</option>
+          <option value="Delivered">Delivered</option>s
+        </select>
       </div>
     </div>
   )
 }
-export default OrderCard
+export default AdminOrderCard

@@ -181,9 +181,16 @@ const getWallet = asyncHandler(async (req, res) => {
 
   try {
     let wallet = await Wallet.findOne({ userId })
+      .populate('history.orderDetails')
+      .sort({ createdAt: -1 })
     if (!wallet) {
       wallet = await Wallet.create({ userId })
     }
+
+    if (wallet.history.length > 1) {
+      wallet.history.sort((a, b) => new Date(b.date) - new Date(a.date))
+    }
+
     return res.status(200).json({
       success: true,
       message: 'wallet fetched successfully',
@@ -202,13 +209,6 @@ const getWallet = asyncHandler(async (req, res) => {
 //@access Private
 const getProfile = asyncHandler(async (req, res) => {
   const userId = req.user.id
-
-  if (!userId) {
-    return res.status(401).json({
-      success: false,
-      message: 'User not authorized',
-    })
-  }
 
   try {
     const user = await User.findById(userId)

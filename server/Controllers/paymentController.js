@@ -5,7 +5,9 @@ import Product from '../Models/productModel.js'
 import Address from '../Models/addressModel.js'
 import Wallet from '../Models/walletModel.js'
 import Transaction from '../Models/transactionModel.js'
+import User from '../Models/userModel.js'
 import { createOrderFn } from '../Utils/razorpay.js'
+import { orderSuccess } from '../Utils/nodemailer.js'
 
 //@desc Place the order
 //@route POST/api/v1/payment/new-order
@@ -37,10 +39,18 @@ const createOrder = asyncHandler(async (req, res) => {
     const wallet = await Wallet.findOne({ userId })
 
     let total = cart.totalPrice
+    let deductionAmount = 0
 
     if (useWallet && wallet) {
-      total -= wallet.balance
-      wallet.balance = 0
+      if (total > wallet.balance) {
+        deductionAmount = wallet.balance
+        total -= wallet.balance
+        wallet.balance = 0
+      } else {
+        deductionAmount = total
+        wallet.balance -= total
+        total = 0
+      }
     }
 
     const order = await createOrderFn(total)
@@ -60,6 +70,13 @@ const createOrder = asyncHandler(async (req, res) => {
       status: 'Pending',
     })
     const savedOrder = await newOrder.save()
+    if (useWallet && wallet) {
+      wallet.history.push({
+        amount: deductionAmount,
+        type: 'deduction',
+        orderDetails: savedOrder._id,
+      })
+    }
     await wallet.save()
 
     res.status(200).json({
@@ -78,8 +95,11 @@ const createOrder = asyncHandler(async (req, res) => {
 const confirmPayment = asyncHandler(async (req, res) => {
   try {
     const { orderId, paymentId } = req.body
+    const userId = req.user.id
 
     const order = await Order.findOne({ orderId }).populate('products.product')
+
+    const user = await User.findById(userId)
 
     if (order) {
       order.status = 'Placed'
@@ -106,6 +126,9 @@ const confirmPayment = asyncHandler(async (req, res) => {
         status: 'success',
       })
       const savedTransaction = await transaction.save()
+
+      // nodemailer custom function
+      await orderSuccess('astrophile1380@gmail.com', order)
 
       res.status(200).json({
         success: true,

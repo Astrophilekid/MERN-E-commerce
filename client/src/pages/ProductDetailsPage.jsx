@@ -81,9 +81,8 @@ const ProductDetailsPage = () => {
   const addToCart = async () => {
     try {
       const { data } = await axios.post(`/cart/add/${_id}`)
-      console.log(data)
+      // console.log(data)
       if (data.success) {
-        console.log('Product added to the cart successfully!')
         dispatch(setCart(data.cart))
         navigate('/cart')
       } else {
@@ -225,13 +224,10 @@ const ProductDetailsPage = () => {
               {/* buttons */}
               <div className="flex flex-col mx-auto min-w-fit whitespace-nowrap my-4 max-w-[450px] w-full text-lg font-semibold  gap-y-4 ">
                 <button
-                  className="bg-secondary px-3 py-2  transition-all hover:shadow-lg sm:mx-10 rounded-lg text-lg  hover:text-[19px]  active:text-lg text-white"
+                  className="bg-white border-accent border-2 shadow-lg text-accent px-3 hover:shadow-lg  hover:bg-accent transition-all hover:text-white  py-2 sm:mx-10 rounded-lg text-lg hover:text-xl active:text-lg  "
                   onClick={addToCart}
                 >
                   Add to cart
-                </button>
-                <button className="bg-white border-accent border-2 shadow-lg text-accent px-3 hover:shadow-lg  hover:bg-accent transition-all hover:text-white  py-2 sm:mx-10 rounded-lg text-lg hover:text-xl active:text-lg  ">
-                  Buy now
                 </button>
               </div>
             </div>

@@ -107,7 +107,7 @@ const Navbar = () => {
                 <motion.img
                   whileTap={{ scale: 0.95 }}
                   src="/logo_nav.png"
-                  className="h-20 max-md:hidden max-sm:ml-5 scale-[0.6] transition lg:inline ease-in-out"
+                  className="h-16 max-md:hidden max-sm:ml-5  transition lg:inline ease-in-out"
                   alt="Gadget Bazaar logo"
                 />
                 <motion.img
@@ -117,7 +117,7 @@ const Navbar = () => {
                   }}
                   whileTap={{ scale: 0.9 }}
                   src="/icon.png"
-                  className="h-16 scale-[0.7] transition md:hidden "
+                  className="h-12  transition md:hidden "
                   alt="Gadget Bazaar mobile logo"
                 />
               </Link>

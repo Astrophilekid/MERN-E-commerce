@@ -7,12 +7,6 @@ import Wallet from '../Models/walletModel.js'
 //@access Private
 const getOrders = asyncHandler(async (req, res) => {
   const userId = req.user.id
-  if (!userId) {
-    res.status(400).json({
-      message: 'user not authenticated',
-      success: false,
-    })
-  }
 
   try {
     const orders = await Orders.find({
@@ -46,7 +40,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
     const order = await Orders.findById(orderId)
 
-    console.log(order)
+    // console.log(order)
 
     if (!order) {
       return res

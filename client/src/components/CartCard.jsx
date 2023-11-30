@@ -48,10 +48,9 @@ const CartCard = ({ product }) => {
 
   const deleteProduct = async () => {
     setIsUpdating(true)
-    console.log('button clicked')
     try {
       const { data } = await axios.patch(`/cart/delete/${_id}`)
-      console.log(data)
+      // console.log(data)
 
       if (data.success) {
         dispatch(

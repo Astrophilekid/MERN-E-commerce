@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-const OrderDetailsModal = ({ closeModal, selectedOrder }) => {
+const AdminOrderDetailsModal = ({ closeModal, selectedOrder }) => {
   return (
     <div className="fixed z-50 top-0 right-0 left-0 bottom-0 flex justify-center items-center bg-black/70">
       <motion.div
@@ -74,12 +74,15 @@ const OrderDetailsModal = ({ closeModal, selectedOrder }) => {
                 </p>
               </div>
             </div>
-            <div className="flex justify-between">
-              address:{' '}
-              <p>
-                {selectedOrder.shippingAddress.addressDetails.address},{' '}
-                {selectedOrder.shippingAddress.addressDetails.city}
-              </p>
+            <div
+              className={` justify-between ${
+                selectedOrder.status === 'Cancelled' ? 'flex' : 'hidden'
+              }`}
+            >
+              reason:{' '}
+              <div className="flex">
+                <p className=" text-red-600">{'changed my mind'}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -87,4 +90,4 @@ const OrderDetailsModal = ({ closeModal, selectedOrder }) => {
     </div>
   )
 }
-export default OrderDetailsModal
+export default AdminOrderDetailsModal

@@ -11,6 +11,8 @@ import AddressModal from '../components/modals/addressModal'
 const CartPage = () => {
   const [isCartLoading, setIsCartLoading] = useState(true)
   const [addressModal, setAddressModal] = useState(false)
+  const [wallet, setWallet] = useState(0)
+  const [useWallet, setUseWallet] = useState(false)
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -18,6 +20,28 @@ const CartPage = () => {
   const myCart = useSelector((state) => state.cart.cartItems)
   const totalPrice = useSelector((state) => state.cart.totalPrice)
   const totalQuantity = useSelector((state) => state.cart.totalQuantity)
+
+  const effectiveTotalPrice = useWallet
+    ? Math.max(totalPrice - wallet, 0)
+    : totalPrice
+
+  const remainingWallet = useWallet
+    ? totalPrice < wallet
+      ? wallet - totalPrice
+      : 0
+    : wallet
+
+  const fetchWallet = async () => {
+    try {
+      const { data } = await axios.get('/users/wallet')
+      // console.log(data)
+      if (data.success) {
+        setWallet(data.wallet.balance)
+      }
+    } catch (error) {
+      alert('something went wrong while fetching wallet')
+    }
+  }
 
   const fetchData = async () => {
     setIsCartLoading(true)
@@ -45,9 +69,9 @@ const CartPage = () => {
   const makePayment = () => {
     try {
       axios
-        .post('/payment/new-order')
+        .post('/payment/new-order', { useWallet })
         .then(({ data }) => {
-          console.log(data)
+          // console.log(data)
           const order = data.savedOrder
 
           var options = {
@@ -93,6 +117,7 @@ const CartPage = () => {
 
   useEffect(() => {
     fetchData()
+    fetchWallet()
   }, [])
 
   return (
@@ -165,7 +190,7 @@ const CartPage = () => {
             )}
             {/* right */}
             {!isCartLoading && myCart?.length > 0 && (
-              <div className="max-md:hidden mt-16 max-w-[250px] flex relative top-4 h-44 flex-col text-lg  justify-between rounded-md shadow-lg p-2 w-1/3 whitespace-nowrap bg-violet-300 ">
+              <div className="max-md:hidden mt-16 w-56 min-w-[14rem]  flex relative top-4 h-60 flex-col text-lg  justify-between rounded-md shadow-lg p-2  whitespace-nowrap bg-violet-100 ">
                 <div className="my-auto flex flex-col gap-y-3">
                   <div className="flex w-full justify-between">
                     total items:{' '}
@@ -173,17 +198,55 @@ const CartPage = () => {
                   </div>
                   <div className="flex  w-full justify-between">
                     total :{' '}
-                    <p className="text-lg font-medium">{totalPrice}/-</p>
+                    <div className="flex flex-col gap-y-2">
+                      <p
+                        className={`text-lg font-medium ${
+                          useWallet && 'line-through text-sm'
+                        }`}
+                      >
+                        {totalPrice.toLocaleString('en-IN')}/-
+                      </p>
+                      <p
+                        className={`text-lg  ${
+                          useWallet ? 'block' : 'hidden'
+                        } text-lg font-medium `}
+                      >
+                        {effectiveTotalPrice.toLocaleString('en-IN')}/-
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <button
-                  className="w-full h-10 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-gray-200 transition-all active:scale-95 hover:text-white   "
-                  onClick={() => {
-                    setAddressModal(true)
-                  }}
-                >
-                  Buy Now
-                </button>
+                {/* wallet checkbox */}
+                <div className="flex flex-col gap-y-2">
+                  <label
+                    htmlFor="useWallet"
+                    className={`flex items-center ${
+                      wallet <= 0 && 'text-gray-500'
+                    }   text-base pl-2 justify-start gap-x-4`}
+                  >
+                    <input
+                      id="useWallet"
+                      disabled={wallet <= 0}
+                      type="checkbox"
+                      checked={useWallet}
+                      onChange={(e) => setUseWallet(e.target.checked)}
+                      className="mr-2  rounded cursor-pointer h-5 w-5 border-2 border-gray-400 text-accent bg-accent checked:bg-accent checked:border-accent"
+                    />
+                    Apply wallet(
+                    {useWallet
+                      ? remainingWallet.toLocaleString('en-IN')
+                      : wallet.toLocaleString('en-IN')}{' '}
+                    /-)
+                  </label>
+                  <button
+                    className="w-full h-10 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-gray-200 transition-all active:scale-95 hover:text-white   "
+                    onClick={() => {
+                      setAddressModal(true)
+                    }}
+                  >
+                    Buy Now
+                  </button>
+                </div>
               </div>
             )}
 
@@ -191,20 +254,58 @@ const CartPage = () => {
             {!isCartLoading && myCart?.length > 0 && (
               <div className="hidden max-md:flex gap-x-5 fixed bottom-3 right-4 left-4 h-20 rounded-md border bg-violet-300 py-2 shadow-xl">
                 {/* left */}
-                <div className="w-3/5 flex text-lg flex-col justify-center  p-3">
-                  <div className="flex w-full border-black pb-4 justify-between">
+                <div className="w-3/5 flex text-lg flex-col justify-center items-center p-3">
+                  <div className="flex w-full border-black justify-start gap-x-5">
                     total items:{' '}
                     <p className="mr-3 font-medium">{totalQuantity}</p>
                   </div>
 
-                  <div className="flex  w-full justify-between">
+                  <div className="flex   w-full justify-start gap-x-4">
                     total price:{' '}
-                    <p className="text-lg font-semibold">{totalPrice}/-</p>
+                    <div>
+                      <p
+                        className={`text-lg font-semibold ${
+                          useWallet && 'line-through text-xs'
+                        }`}
+                      >
+                        {totalPrice}/-
+                      </p>
+                      <p
+                        className={`text-lg ${
+                          useWallet ? 'block' : 'hidden'
+                        } font-semibold`}
+                      >
+                        {effectiveTotalPrice.toLocaleString('en-IN')}/-
+                      </p>
+                    </div>
                   </div>
                 </div>
+                {/* wallet checkbox */}
+                <label
+                  htmlFor="useWallet"
+                  className={`flex items-center whitespace-nowrap ${
+                    wallet <= 0 && 'text-gray-500'
+                  }   text-base pl-2 justify-start gap-x-4`}
+                >
+                  <input
+                    id="useWallet"
+                    disabled={wallet <= 0}
+                    type="checkbox"
+                    checked={useWallet}
+                    onChange={(e) => setUseWallet(e.target.checked)}
+                    className="mr-2  rounded cursor-pointer h-5 w-5 border-2 border-gray-400 text-accent bg-accent  checked:bg-accent checked:border-accent"
+                  />
+                  Apply wallet
+                  <br /> (
+                  {useWallet
+                    ? remainingWallet.toLocaleString('en-IN')
+                    : wallet.toLocaleString('en-IN')}{' '}
+                  /-)
+                </label>
+
                 {/* right */}
                 <button
-                  className="w-1/5 ml-auto h-full m-2 my-2 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg shadow-md  rounded text-white hover:text-white  transition-all active:scale-95  hover:shadow-lg"
+                  className="w-1/5 ml-auto h-full m-2 my-2 mt-auto flex justify-center bg-gradient-to-tr from-violet-700 to-red-400  items-center text-lg max-sm:text-base shadow-md  rounded text-white hover:text-white  transition-all active:scale-95  hover:shadow-lg"
                   onClick={() => {
                     setAddressModal(true)
                   }}

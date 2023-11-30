@@ -13,7 +13,6 @@ const isAdmin = asyncHandler(async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.TOKEN_KEY)
 
       req.user = await User.findById(decoded.id)
-      // console.log(req.user)
       if (req.user.isAdmin) {
         next()
       } else {

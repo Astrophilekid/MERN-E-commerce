@@ -6,15 +6,15 @@ const AccountPage = () => {
       <AccountCategory
         name="Profile"
         link="profile"
-        src="../../assets/icons/orders.png"
-      />
-      <AccountCategory
-        name="Orders"
-        link="orders"
         src="../../assets/icons/profile.png"
       />
       <AccountCategory
-        name="Wallet"
+        name="My Orders"
+        link="orders"
+        src="../../assets/icons/orders.png"
+      />
+      <AccountCategory
+        name="My Wallet"
         link="wallet"
         src="../../assets/icons/wallet_white.png"
       />
