@@ -17,6 +17,9 @@ const Navbar = () => {
   const user = useSelector((state) => state.user.user)
   const isLoggedIn = useSelector((state) => state.user.isLoggedIn)
 
+  // console.log('user: ', user)
+  // console.log('isLoggedIn: ', isLoggedIn)
+
   let cartQuantity = useSelector((state) => state.cart.totalQuantity)
 
   const navigate = useNavigate()
@@ -42,6 +45,9 @@ const Navbar = () => {
 
   // cart fetch
   const fetchData = async () => {
+    if (!isLoggedIn) {
+      return
+    }
     try {
       const { success, totalQuantity } = await fetchCart()
       // console.log(success, cart, totalPrice, totalQuantity)
@@ -63,13 +69,14 @@ const Navbar = () => {
 
   // cart fetch end
   const searchProduct = async () => {
+    navigate('/')
     try {
       const data = await searchProductApi(search)
 
       if (data.success) {
         dispatch(setSearchResults(data.product))
         setHasSearched(true)
-        navigate('/')
+
         // console.log(data.product)
       } else {
         dispatch(setSearchResults([]))
@@ -185,12 +192,12 @@ const Navbar = () => {
                 </p>
                 <p className="text-xl font-semibold">Account</p>
               </Link>
-
+              {/*
               <Link to={'/orders'} className="-mb-3 ">
                 <h1 className="text-xl font-semibold text-white ">Orders</h1>
-              </Link>
+              </Link> */}
 
-              <Link to={isLoggedIn ? '/cart' : '/login'}>
+              <Link to={'/cart'}>
                 <motion.div
                   whileHover={{
                     scale: 1.05,

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { setSidebarToggle } from '../slices/sidebarSlice.js'
 import { useDispatch } from 'react-redux'
 
-const SidebarTab = ({ name, toLink, page }) => {
+const SidebarTab = ({ name, toLink, src, customImgClass }) => {
   const dispatch = useDispatch()
 
   const { category } = useParams()
@@ -23,11 +23,10 @@ const SidebarTab = ({ name, toLink, page }) => {
     >
       <Link
         to={toLink}
-        className={`flex justify-start text-black rounded-lg items-center w-full   h-14 text-lg
-
+        className={`flex justify-start gap-x-2  text-black rounded-lg items-center w-full   h-14 text-lg
         ${
           name === category || (category === undefined && name === 'Home')
-            ? 'bg-violet-500 font-semibold text-white'
+            ? 'bg-secondary font-semibold text-white'
             : ''
         }  hover:shadow-md pl-5 ${
           name !== category &&
@@ -36,6 +35,11 @@ const SidebarTab = ({ name, toLink, page }) => {
         }
            capitalize`}
       >
+        <img
+          src={src}
+          alt=""
+          className={customImgClass + 'w-8 bg-secondary rounded-xl p-1'}
+        />
         {name}
       </Link>
     </motion.div>

@@ -27,6 +27,7 @@ import ProfilePage from './pages/ProfilePage.jsx'
 import ForgotPassword from './pages/ForgotPassword.jsx'
 import ResetPassword from './pages/ResetPassword.jsx'
 import AccountPage from './pages/AccountPage.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
 
 axios.defaults.baseURL = 'http://localhost:4000/api/v1'
 axios.defaults.withCredentials = true
@@ -51,25 +52,34 @@ const App = () => {
                 path="/products/:category"
                 element={<ProductsCategoryPage />}
               />
-              <Route path="/cart" element={<CartPage />} />
-              <Route path="/account" element={<AccountPage />} />
-              <Route path="/orders" element={<UserOrdersPage />} />
-              <Route path="/wallet" element={<WalletPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              {/* user protected routes */}
+              <Route element={<ProtectedRoute role="" />}>
+                <Route path="/cart" element={<CartPage />} />
+                <Route path="/account" element={<AccountPage />} />
+                <Route path="/orders" element={<UserOrdersPage />} />
+                <Route path="/wallet" element={<WalletPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+              </Route>
             </Route>
 
             {/* admin layout */}
             <Route path="admin/*" element={<AdminLayout />}>
-              <Route index element={<AdminHomePage />} />
-              <Route path="products" element={<ProductsPage />} />
-              <Route
-                path="products/:category"
-                element={<AdminViewProductsPage />}
-              />
-              <Route path="product/:id" element={<AdminProductDetailsPage />} />
-              <Route path="users" element={<UserPage />} />
-              <Route path="orders" element={<OrdersPage />} />
-              <Route path="profile" element={<AdminProfilePage />} />
+              {/* admin protected route */}
+              <Route element={<ProtectedRoute role="admin" />}>
+                <Route index element={<AdminHomePage />} />
+                <Route path="products" element={<ProductsPage />} />
+                <Route
+                  path="products/:category"
+                  element={<AdminViewProductsPage />}
+                />
+                <Route
+                  path="product/:id"
+                  element={<AdminProductDetailsPage />}
+                />
+                <Route path="users" element={<UserPage />} />
+                <Route path="orders" element={<OrdersPage />} />
+                <Route path="profile" element={<AdminProfilePage />} />
+              </Route>
             </Route>
           </Routes>
         </Router>

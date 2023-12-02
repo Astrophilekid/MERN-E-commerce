@@ -7,12 +7,17 @@ import { setCart } from '../slices/cartSlice'
 import CartSkelton from '../components/skeltons/CartSkelton'
 import { fetchCart } from '../api'
 import AddressModal from '../components/modals/addressModal'
+import CustomAlert from '../components/CustomAlert'
 
 const CartPage = () => {
   const [isCartLoading, setIsCartLoading] = useState(true)
   const [addressModal, setAddressModal] = useState(false)
   const [wallet, setWallet] = useState(0)
   const [useWallet, setUseWallet] = useState(false)
+
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertTheme, setAlertTheme] = useState('success')
 
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -66,52 +71,76 @@ const CartPage = () => {
     }
   }
 
-  const makePayment = () => {
+  const checkStock = async () => {
     try {
-      axios
-        .post('/payment/new-order', { useWallet })
-        .then(({ data }) => {
-          // console.log(data)
-          const order = data.savedOrder
-
-          var options = {
-            key: import.meta.env.VITE_RZP_ID,
-            amount: order.total * 100,
-            currency: 'INR',
-            name: 'Your Company Name',
-            description: 'Test Transaction',
-            order_id: order.orderId,
-            handler: function (response) {
-              axios
-                .post('/payment/pay', {
-                  orderId: response.razorpay_order_id,
-                  paymentId: response.razorpay_payment_id,
-                })
-                .then(({ data }) => {
-                  navigate('/orders')
-                })
-                .catch((error) => {
-                  console.log(error)
-                })
-            },
-            prefill: {
-              name: 'Customer Ajesh',
-              email: 'customer@example.com',
-              contact: '9999999999',
-            },
-            notes: {
-              address: 'Your Company Address',
-            },
-            theme: {
-              color: '#61dafb',
-            },
-          }
-          var rzp1 = new window.Razorpay(options)
-          rzp1.open()
-        })
-        .catch((err) => console.log(err))
+      const { data } = await axios.get('/products/stock')
+      // console.log(data)
+      if (data.success) {
+        return data
+      } else {
+        return data
+      }
     } catch (error) {
-      console.log('catch block error: ', error)
+      console.error(error)
+    }
+  }
+
+  const makePayment = async () => {
+    setAddressModal(false)
+    const data = await checkStock()
+    if (data.success) {
+      try {
+        axios
+          .post('/payment/new-order', { useWallet })
+          .then(({ data }) => {
+            console.log(data)
+            const order = data.savedOrder
+
+            var options = {
+              key: import.meta.env.VITE_RZP_ID,
+              amount: order.total * 100,
+              currency: 'INR',
+              name: 'Gadget Bazaar',
+              description: 'Test Transaction',
+              order_id: order.orderId,
+              handler: function (response) {
+                axios
+                  .post('/payment/pay', {
+                    orderId: response.razorpay_order_id,
+                    paymentId: response.razorpay_payment_id,
+                  })
+                  .then(({ data }) => {
+                    navigate('/orders')
+                  })
+                  .catch((error) => {
+                    console.log(error)
+                  })
+              },
+              prefill: {
+                name: '',
+                email: '',
+                contact: '',
+              },
+              notes: {
+                address: 'Your Company Address',
+              },
+              theme: {
+                color: '#502a94',
+              },
+            }
+            var rzp1 = new window.Razorpay(options)
+            rzp1.open()
+          })
+          .catch((err) => {
+            console.log('error' + err)
+          })
+      } catch (error) {
+        console.log('catch block error: ', error)
+      }
+    } else {
+      setAlertOpen(true)
+      setAlertMessage(data.message)
+      setAlertTheme('error')
     }
   }
 
@@ -146,7 +175,16 @@ const CartPage = () => {
         </>
       ) : (
         <>
-          <div className="w-full  px-3 flex justify-center min-h-fit pb-10 gap-x-4 overflow-hidden">
+          <div className="w-full relative px-3 flex justify-center min-h-fit h-full pb-10 gap-x-4 overflow-hidden">
+            <div className="absolute top-0 right-0">
+              <CustomAlert
+                open={alertOpen}
+                theme={alertTheme}
+                setOpen={setAlertOpen}
+                message={alertMessage}
+                duration={5000}
+              />
+            </div>
             <div
               className={`sm:w-full ${
                 !isCartLoading && myCart?.length > 0 && 'sm:w-2/3'

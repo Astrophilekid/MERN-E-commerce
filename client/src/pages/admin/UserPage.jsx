@@ -221,10 +221,7 @@ const UserPage = () => {
             />
 
             {/* end iof mui search */}
-            <div
-              className="h-12 py-8 flex w-16 justify-center items-center mt-[1px] -ml-1 z-[1] search__div"
-              style={{ background: COLORS.GRADIENT, color: 'white' }}
-            >
+            <div className="h-12 py-8 flex w-16 justify-center items-center mt-[1px] -ml-1 z-[1] bg-slate-500 rounded-tr-lg rounded-br-lg cursor-pointer">
               <button disabled={search === ''} onClick={handleSearch}>
                 <motion.img
                   whileHover={{
@@ -234,7 +231,7 @@ const UserPage = () => {
                   whileTap={{ scale: 0.95 }}
                   src="../../assets/icons/search.png"
                   alt="search"
-                  className="w-7 cursor-pointer"
+                  className="w-7 "
                 />
               </button>
             </div>

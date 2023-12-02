@@ -5,6 +5,10 @@ import { Link, useNavigate } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import OtpValidationPage from './OtpValidationPage.jsx'
 import { COLORS } from '../styles/color'
+import CustomAlert from '../components/CustomAlert.jsx'
+import { setUser } from '../slices/userSlice.js'
+import { useDispatch } from 'react-redux'
+import { TypeAnimation } from 'react-type-animation'
 
 const RegisterPage = () => {
   const [name, setName] = useState('')
@@ -15,6 +19,10 @@ const RegisterPage = () => {
 
   const [isFormValid, setIsFormValid] = useState(true)
   const [showOtpPage, setShowOtpPage] = useState(false)
+
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertTheme, setAlertTheme] = useState('success')
 
   const navigate = useNavigate()
 
@@ -35,21 +43,30 @@ const RegisterPage = () => {
 
       // console.log(data)
       if (data.success) {
-        alert(`an otp is send to ${mobile}, valid for 10 min`)
-        setShowOtpPage(true)
+        setAlertOpen(true)
+        setAlertMessage(`an otp is send to ${mobile}, valid for 10 min`)
+        setAlertTheme('success')
+        const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 3
+        dispatch(setUser({ user: data.user, exp: expirationTime }))
+        setTimeout(() => {
+          setShowOtpPage(true)
+        }, 2000)
       } else {
-        alert('something went wrong!')
+        setAlertOpen(true)
+        setAlertMessage(`registration couldn't complete!`)
+        setAlertTheme('error')
         navigate('/register')
       }
     } catch (error) {
-      // console.log('something went wrong during registration ' + error)
-      alert('Registration failed')
+      setAlertOpen(true)
+      setAlertMessage(`registration failed`)
+      setAlertTheme('error')
       navigate('/register')
     }
   }
 
   return (
-    <>
+    <div className="p-0 w-full bg-gradient-to-br from-red-400 to-violet-700">
       {showOtpPage ? (
         <OtpValidationPage
           name={name}
@@ -59,11 +76,42 @@ const RegisterPage = () => {
           setShowOtpPage={setShowOtpPage}
         />
       ) : (
-        <div
-          className=" p-4 w-full h-screen flex justify-center text-white flex-col pb-10 items-center gap-5"
-          style={{ background: COLORS.GRADIENT }}
-        >
-          <div className="border my-auto md:my-0  rounded-lg py-4 px-6  w-96 flex flex-col bg-white text-black">
+        <div className="flex justify-center items-center  min-h-screen h-screen p-0 m-0">
+          {/* gradient side */}
+          <div className="w-1/2 max-md:hidden relative bottom-5 flex  h-full items-center justify-center ">
+            <div className="mx-2 h-full">
+              <TypeAnimation
+                sequence={[
+                  'Welcome to Gadget Bazaar',
+                  3000,
+                  'Register to continue',
+                  2000,
+                  'All the tech, in one place',
+                  2000,
+                ]}
+                wrapper="span"
+                speed={10}
+                style={{
+                  fontSize: '2em',
+                  fontWeight: '900',
+                  display: 'inline-block',
+                  color: 'white',
+                  stroke: '1',
+                }}
+                repeat={Infinity}
+              />
+            </div>
+          </div>
+          {/* register side */}
+          <div className="absolute top-5">
+            <CustomAlert
+              open={alertOpen}
+              theme={alertTheme}
+              setOpen={setAlertOpen}
+              message={alertMessage}
+            />
+          </div>
+          <div className="border  my-4  rounded-lg py-4 px-6  w-96 flex flex-col bg-white text-black">
             <h1
               className="text-3xl font-bold"
               style={{ color: COLORS.BACKGROUND }}
@@ -130,10 +178,7 @@ const RegisterPage = () => {
                 isFormValid={isFormValid}
               />
 
-              <button
-                className="w-full py-2 text-white font-bold rounded-lg  text-sm mt-5 hover:bg-red-800"
-                style={{ background: COLORS.GRADIENT }}
-              >
+              <button className="w-full py-2 text-gray-100 bg-gradient-to-br from-red-400 to-violet-600 rounded-lg font-bold  text-sm mt-5 hover:scale-[1.01] active:scale-[0.99] transition-all hover:text-white">
                 Continue
               </button>
             </form>
@@ -154,7 +199,7 @@ const RegisterPage = () => {
           </div>
         </div>
       )}
-    </>
+    </div>
   )
 }
 export default RegisterPage

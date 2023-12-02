@@ -3,6 +3,9 @@ import axios from 'axios'
 import { Link, useNavigate } from 'react-router-dom'
 import FormInput from '../components/FormInput.jsx'
 import { COLORS } from '../styles/color.js'
+import CustomAlert from '../components/CustomAlert.jsx'
+import { useDispatch } from 'react-redux'
+import { setUser } from '../slices/userSlice.js'
 
 const OtpValidationPage = ({
   name,
@@ -14,7 +17,12 @@ const OtpValidationPage = ({
   const [otp, setOtp] = useState('')
   const [isFormValid, setIsFormValid] = useState(true)
 
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertTheme, setAlertTheme] = useState('success')
+
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const validateOTP = async (e) => {
     e.preventDefault()
@@ -23,37 +31,60 @@ const OtpValidationPage = ({
       setIsFormValid(false)
     }
     try {
-      const { data } = await axios.post('/users/verify-otp', {
+      const response = await axios.post('/users/verify-otp', {
         name,
         email,
         password,
         mobile,
         otp,
       })
+      const data = response.data
 
-      console.log(data)
       if (data.success) {
-        alert(`Registration successful`)
-        navigate('/login')
+        setAlertOpen(true)
+        setAlertMessage(data.message)
+        setAlertTheme('success')
+        const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 3
+        dispatch(setUser({ user: data.user, exp: expirationTime }))
+        setTimeout(() => {
+          navigate('/')
+        }, 1500)
       } else {
-        alert(`OTP verification failed, wrong or expired`)
+        setAlertOpen(true)
+        setAlertMessage(data.message)
+        switch (data.errorType) {
+          case 'ExpiredOTP':
+            setAlertTheme('warning')
+            break
+          case 'OTPVerificationFailed':
+            setAlertTheme('error')
+            break
+          default:
+            setAlertTheme('error')
+        }
         navigate('/register')
       }
     } catch (error) {
-      console.log('otp verification failed ' + error)
-      alert('otp verification failed ')
+      setAlertOpen(true)
+      setAlertMessage('OTP verification failed. Please try again.')
+      setAlertTheme('error')
       navigate('/register')
     }
   }
 
   return (
     <div
-      className="h-screen p-4 w-full flex text-white flex-col pb-10 items-center gap-5"
+      className="relative h-screen p-4 w-full flex text-white flex-col pb-10 items-center gap-5"
       style={{ background: COLORS.GRADIENT }}
     >
-      {/* <div className="al">
-        <img src="/logo.png" className="h-40 -mb-5 " alt="amazon logo" />
-      </div> */}
+      <div className="absolute top-5">
+        <CustomAlert
+          open={alertOpen}
+          theme={alertTheme}
+          setOpen={setAlertOpen}
+          message={alertMessage}
+        />
+      </div>
       <div className="border my-auto text-black bg-white rounded-lg py-4 px-4  w-80 flex flex-col">
         <h1
           className="text-[1.7rem] font-medium"
@@ -73,10 +104,7 @@ const OtpValidationPage = ({
             onchange={setOtp}
             isFormValid={isFormValid}
           />
-          <button
-            className="w-full py-2 text-white font-bold rounded-lg  text-sm mt-5 hover:bg-red-800"
-            style={{ background: COLORS.GRADIENT }}
-          >
+          <button className="w-full py-2 text-gray-100 bg-gradient-to-br from-red-400 to-violet-600 rounded-lg font-bold  text-sm mt-5 hover:scale-[1.01] active:scale-[0.99] transition-all hover:text-white">
             Submit
           </button>
         </form>

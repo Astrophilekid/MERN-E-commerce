@@ -73,14 +73,14 @@ const ProductCard = ({ product }) => {
 
             {/* price */}
             {discount && discount > 0 ? (
-              <div className="flex flex-col mt-3 gap-y-0 mb-2">
+              <div className="flex  mt-3 gap-y-0 mb-2">
                 <div className="flex">
                   <p className="font-semibold">{'\u20B9 '}</p>
                   <p className="text-2xl sm:text-3xl  font-bold text-slate-900">{`${Math.round(
                     (price * (100 - Number(discount))) / 100
                   )}`}</p>
                 </div>
-                <div className="flex mt-1 text-gray-500 line-through">
+                <div className="flex mt-3 ml-3 text-gray-400 line-through">
                   <p className="font-medium text-xs">{'\u20B9 '}</p>
                   <p className="text-sm sm:text-md  font-medium  h-3 ">{`${price}`}</p>
                 </div>

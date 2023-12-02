@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import _ from 'lodash'
+import CustomAlert from '../CustomAlert'
 
 const AddressModal = ({ makePayment, setAddressModal }) => {
   const [addressDetails, setAddressDetails] = useState({
@@ -18,8 +19,12 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
     pin: '',
   })
   const [isAddressFetched, setIsAddressFetched] = useState(false)
-  const [isBuyNowEnabled, setIsBuyNowEnabled] = useState(false)
+  const [isButtonEnabled, setIsButtonEnabled] = useState(false)
   const [isAddressChanged, setIsAddressChanged] = useState(false)
+  const [isAnyValueEmpty, setIsAnyValueEmpty] = useState(false)
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertTheme, setAlertTheme] = useState('success')
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -37,53 +42,71 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
         const { address, street, city, state, pin } =
           data.address.addressDetails
         setAddressDetails({
-          address: address || '',
-          street: street || '',
-          city: city || '',
-          state: state || '',
-          pin: pin || '',
+          address: address,
+          street: street,
+          city: city,
+          state: state,
+          pin: pin,
         })
         setInitialAddress({
-          address: address || '',
-          street: street || '',
-          city: city || '',
-          state: state || '',
-          pin: pin || '',
+          address: address,
+          street: street,
+          city: city,
+          state: state,
+          pin: pin,
         })
         setIsAddressFetched(true)
-        setIsBuyNowEnabled(true)
+        setIsButtonEnabled(true)
       } else {
-        setIsBuyNowEnabled(true)
+        setIsButtonEnabled(true)
         setIsAddressFetched(false)
       }
     } catch (error) {
+      alert('Internal server error')
       console.error('Error fetching address:', error)
     }
   }
 
-  const addAddress = async () => {
-    setIsBuyNowEnabled(false)
-    const { data } = await axios.post('/address/add', { addressDetails })
-    if (data.success) {
-      // console.log(data)
-      await fetchAddress()
-      setIsBuyNowEnabled(true)
-    } else {
-      setIsBuyNowEnabled(true)
+  const addAddress = async (e) => {
+    e.preventDefault()
+    setIsButtonEnabled(false)
+    try {
+      const { data } = await axios.post('/address/add', { addressDetails })
+      if (data.success) {
+        setAlertOpen(true)
+        setAlertMessage('Address added successfully')
+        setAlertTheme('success')
+        await fetchAddress()
+        setIsButtonEnabled(true)
+      } else {
+        setIsButtonEnabled(true)
+      }
+    } catch (error) {
+      alert('Internal server error')
+      console.error('Error adding address:', error)
     }
   }
 
-  const updateAddress = async () => {
-    setIsBuyNowEnabled(false)
-    const { data } = await axios.put('/address/update', {
-      addressDetails,
-    })
-    // console.log(data)
-    if (data.success) {
-      await fetchAddress()
-      setIsBuyNowEnabled(true)
-    } else {
-      setIsBuyNowEnabled(true)
+  const updateAddress = async (e) => {
+    e.preventDefault()
+    setIsButtonEnabled(false)
+    try {
+      const { data } = await axios.put('/address/update', {
+        addressDetails,
+      })
+      // console.log(data)
+      if (data.success) {
+        await fetchAddress()
+        setIsButtonEnabled(true)
+        setAlertOpen(true)
+        setAlertMessage('Address updated successfully')
+        setAlertTheme('success')
+      } else {
+        setIsButtonEnabled(true)
+      }
+    } catch (error) {
+      alert('Internal server error')
+      console.error('Error adding address:', error)
     }
   }
 
@@ -92,7 +115,9 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
     try {
       await makePayment()
     } catch (error) {
-      console.error('Error:', error)
+      setAlertOpen(true)
+      setAlertMessage("couldn't complete the request")
+      setAlertTheme('error')
     }
   }
 
@@ -101,12 +126,26 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
   }, [])
 
   useEffect(() => {
+    let valueEmpty = Object.values(addressDetails).some((value) => value === '')
+    setIsAnyValueEmpty(valueEmpty)
+    // console.log(isAnyValueEmpty)
+  }, [addressDetails])
+
+  useEffect(() => {
     const isEqual = _.isEqual(initialAddress, addressDetails)
     setIsAddressChanged(!isEqual)
   }, [initialAddress, addressDetails])
 
   return (
     <div className="fixed z-50 top-0 right-0 left-0 bottom-0 flex justify-center items-center bg-black/70">
+      <div className="absolute top-5">
+        <CustomAlert
+          open={alertOpen}
+          theme={alertTheme}
+          setOpen={setAlertOpen}
+          message={alertMessage}
+        />
+      </div>
       <div className="w-9/12 sm:w-3/5 md:w-6/12 lg:w-4/12  h-fit r p-5 flex flex-col bg-slate-50 rounded-md">
         <div className="flex relative flex-col w-full h-full p-2 px3 items-center justify-start">
           <img
@@ -119,7 +158,13 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
             Shipping Address
           </h1>
           <form
-            onSubmit={handleSubmit}
+            onSubmit={
+              isAddressFetched
+                ? isAddressChanged
+                  ? updateAddress
+                  : handleSubmit
+                : addAddress
+            }
             className="w-full h-full overflow-hidden"
           >
             <label>
@@ -185,12 +230,12 @@ const AddressModal = ({ makePayment, setAddressModal }) => {
             {/* submit button */}
             <button
               className={`w-full   ${
-                !isBuyNowEnabled
+                isAnyValueEmpty
                   ? 'bg-gray-700 cursor-wait'
                   : 'bg-gradient-to-tr from-violet-700 to-red-400'
               }  mt-7 self-end  h-10  flex justify-center  items-center text-lg shadow-md  rounded text-white transition-all active:scale-95    `}
               type="submit"
-              disabled={!isBuyNowEnabled}
+              disabled={!isButtonEnabled || isAnyValueEmpty}
               onClick={
                 isAddressFetched
                   ? isAddressChanged

@@ -56,7 +56,6 @@ const ProfilePage = () => {
         })
       } else {
         setAddressLoading(false)
-        alert('Address fetch failed')
       }
     } catch (error) {
       setAddressLoading(false)
@@ -84,11 +83,11 @@ const ProfilePage = () => {
           className="object-contain ml-2 h-9 mt-2"
         />
       </div>
-      <div className="w-full h-full flex max-md:flex-col gap-10 items-center justify-center pb-10 px-3">
+      <div className="w-full h-full flex max-md:flex-col gap-10 items-center justify-center pb-10 px-5">
         {profModal && <EditProfileModal />}
 
         {/* profile */}
-        <div className="w-9/12  sm:w-3/5 md:w-6/12 lg:w-4/12  h-80 r p-5 flex flex-col bg-violet-100 rounded-md">
+        <div className="w-full mx-1  sm:w-8/12 md:w-7/12 lg:w-4/12  h-80 r p-2 flex flex-col bg-violet-100 rounded-md py-5">
           {profileLoading ? (
             <div className="w-full h-full flex justify-center items-center gap-y-4 font-medium ">
               <CircularProgress style={{ scale: '1.5' }} />
@@ -99,13 +98,13 @@ const ProfilePage = () => {
                 <h1 className="text-2xl lg:text-3xl font-semibold  mb-3">
                   Profile
                 </h1>
-                <button className="h-8 bg-gray-500 transition-all hover:bg-accent p-1 rounded-xl active:scale-95">
+                {/* <button className="h-8 bg-red-400 transition-all hover:bg-accent p-1 rounded-xl active:scale-95">
                   <img
                     src="/edit.png"
                     className="object-contain max-h-full max-w-full"
                     alt="edit"
                   />
-                </button>
+                </button> */}
               </div>
               <div className="flex h-16 items-center justify-start gap-x-10">
                 <img
@@ -145,7 +144,7 @@ const ProfilePage = () => {
             setAddress={setAddress}
           />
         )}
-        <div className="w-9/12  sm:w-3/5 md:w-6/12 lg:w-4/12 h-80 r p-5 flex flex-col bg-violet-100 rounded-md">
+        <div className="w-full mx-1  sm:w-8/12 md:w-7/12 lg:w-4/12  h-80 r p-2 flex flex-col bg-violet-100 rounded-md py-5">
           {addressLoading ? (
             <div className="w-full h-full flex justify-center items-center gap-y-4 font-medium ">
               <CircularProgress style={{ scale: '1.5' }} />
@@ -157,11 +156,13 @@ const ProfilePage = () => {
                   Address
                 </h1>
                 <button
-                  className="h-8 bg-gray-500 transition-all hover:bg-accent p-1 rounded-xl active:scale-95"
+                  className="h-8  bg-red-400 transition-all hover:bg-accent p-1 rounded-xl active:scale-95"
                   onClick={() => setAddModal(true)}
                 >
                   <img
-                    src="/edit.png"
+                    src={
+                      address?.address?.length < 1 ? '/add.png' : '/edit.png'
+                    }
                     className="object-contain max-h-full max-w-full"
                     alt="edit"
                   />

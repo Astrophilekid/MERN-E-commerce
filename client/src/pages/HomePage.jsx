@@ -122,10 +122,7 @@ const HomePage = () => {
 
   return (
     <div className="z-0 relative ">
-      <div
-        className="flex gap-x-3 z-30 sticky  items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]"
-        style={{ background: COLORS.BACKGROUND }}
-      >
+      <div className="flex gap-x-3 z-30 sticky bg-secondary  items-center -mt-4 top-0 w-full h-12 px-3 py-[4px]">
         <p
           className={categoryStyle('All')}
           onClick={() => handleCategorySelection('All')}

@@ -1,18 +1,21 @@
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 import CircularProgress from '@mui/material/CircularProgress'
-import { motion } from 'framer-motion'
+import { logoutUser } from '../../slices/userSlice'
 
 import { Link, useNavigate } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
 
 const AdminProfilePage = () => {
   const [user, setUser] = useState({})
+  const [admins, setAdmins] = useState([])
   const [userList, setUserList] = useState([])
   const [profileLoading, setProfileLoading] = useState(false)
   const [search, setSearch] = useState('')
   const [hasSearched, setHasSearched] = useState(false)
   const [newAdmin, setNewAdmin] = useState([])
   const navigate = useNavigate()
+  const dispatch = useDispatch()
 
   const getProfile = async () => {
     setProfileLoading(true)
@@ -38,7 +41,7 @@ const AdminProfilePage = () => {
     try {
       const { data } = await axios.get(`/admin/search-user?query=${search}`)
       if (data.success) {
-        console.log(data)
+        // console.log(data)
         setNewAdmin(data.users)
       } else {
         setNewAdmin((prev) => {
@@ -50,9 +53,37 @@ const AdminProfilePage = () => {
     }
   }
 
+  const getAdmins = async () => {
+    try {
+      const { data } = await axios.get('/admin/admins')
+      if (data.success) {
+        setAdmins(data.admins)
+      }
+    } catch (error) {
+      alert('something went wrong when fetching admins')
+    }
+  }
+
   useEffect(() => {
     getProfile()
+    getAdmins()
   }, [])
+
+  const updateAdmin = async (id) => {
+    try {
+      const { data } = await axios.put(`/admin/update-status/${id}`)
+      if (data.success) {
+        // console.log(data)
+        getAdmins()
+        handleSearch()
+      } else {
+        alert('failed to update admin status')
+      }
+    } catch (error) {
+      alert('failed to update admin status')
+      console.error(error)
+    }
+  }
 
   useEffect(() => {
     setHasSearched(false)
@@ -73,8 +104,19 @@ const AdminProfilePage = () => {
     }
   }, [search])
 
+  const logout = async () => {
+    const { data } = await axios.post('/admin/logout')
+    console.log(data)
+    if (data.success) {
+      dispatch(logoutUser())
+      navigate('/admin-login')
+    } else {
+      alert('logout attempt failed!')
+    }
+  }
+
   return (
-    <>
+    <div className="min-h-screen pb-20">
       <div className="text-2xl sm:text-3xl font-semibold h-14  rounded-sm w-full border-b flex items-center  text-slate-800 mb-5 pl-5">
         <button
           className="bg-slate-700 hover:bg-slate-900 mb-1 items-center  flex mt-2 rounded-full text-white text-lg text-center mr-3 transition-transform duration-200 hover:scale-105 active:scale-95"
@@ -83,8 +125,19 @@ const AdminProfilePage = () => {
           <img src="/go back.png" alt="go back" className="h-6" />
         </button>
         Admin Profile
+        <button
+          className="ml-auto mr-3 text-base flex items-center gap-x-2"
+          onClick={logout}
+        >
+          <p className="h-full ">logout</p>
+          <img
+            src={'../../../assets/icons/Logout.png'}
+            alt="logout"
+            className="w-10"
+          />
+        </button>
       </div>
-      <div className="w-full h-full flex max-md:flex-col gap-10 items-center justify-center pb-10 px-5">
+      <div className="w-full h-full overflow-hidden flex max-md:flex-col gap-10 items-center justify-center pb-20 px-5">
         {/* profile */}
         <div className="w-9/12  sm:w-3/5 md:w-6/12 lg:w-4/12  h-80 r p-5 flex flex-col bg-violet-100 rounded-md">
           {profileLoading ? (
@@ -134,8 +187,30 @@ const AdminProfilePage = () => {
             </div>
           )}
         </div>
-        <div className="md:self-start flex flex-col w-96 ">
-          <p className="text-2xl font-medium mb-5">Add New admin?</p>
+        <div className="md:self-start flex flex-col w-96 md:mt-6 ">
+          <div className="flex flex-col mb-5 border rounded-lg p-2 h-40 max-h-60 overflow-y-auto">
+            <h1 className="text-xl text-center mb-2 font-semibold">ADMINS</h1>
+            {admins.length > 0 ? (
+              admins.map((admin, i) => (
+                <div
+                  key={i}
+                  className="flex justify-between items-center mt-3 bg-slate-100 rounded-xl p-2 mb-2 border-b"
+                >
+                  <div className="font-semibold">{admin.email}</div>
+
+                  <button
+                    className="bg-red-600 hover:bg-red-700 active:scale-95 transition-all px-2 py-2 text-sm text-white rounded-xl"
+                    onClick={() => updateAdmin(admin._id)}
+                  >
+                    remove
+                  </button>
+                </div>
+              ))
+            ) : (
+              <div>"something went wrong when fetching admin"</div>
+            )}
+          </div>
+          <p className="text-xl font-medium mb-2">Add New admin?</p>
           <div className="flex items-center   focus:border-2 rounded-md  justify-center  ">
             <input
               type="text"
@@ -149,7 +224,6 @@ const AdminProfilePage = () => {
               onClick={handleSearch}
             >
               <img
-                whileTap={{ scale: 0.95 }}
                 src="../../assets/icons/search.png"
                 alt="search"
                 className="w-7 cursor-pointer active:scale-90 transition-all"
@@ -160,7 +234,7 @@ const AdminProfilePage = () => {
           {/* search results */}
           {search.length > 0 && !hasSearched && (
             <div className="relative w-full ">
-              <div className="cursor-pointer top-16 z-50 w-full border shadow-md bg-purple-100 p-1 h-fit rounded-lg ">
+              <div className="absolute cursor-pointer top-2 z-50 w-full border shadow-md bg-purple-100 p-1 h-fit rounded-lg ">
                 {userList.length > 0 ? (
                   userList.map((value, i) => (
                     <p
@@ -168,6 +242,7 @@ const AdminProfilePage = () => {
                       onClick={() => {
                         setSearch(value.email)
                         setHasSearched(true)
+                        handleSearch()
                       }}
                       className=" p-1 border-b rounded-lg hover:bg-purple-300 hover:font-medium  my-1 "
                     >
@@ -176,7 +251,7 @@ const AdminProfilePage = () => {
                   ))
                 ) : (
                   <p className=" p-1 border-b rounded-lg  font-medium italic hover:font-medium my-1 ">
-                    {`No user found "`}
+                    {`No user found for "${search}"`}
                   </p>
                 )}
               </div>
@@ -187,18 +262,29 @@ const AdminProfilePage = () => {
             newAdmin.map((user, i) => (
               <div
                 key={i}
-                className="flex justify-between mt-3 bg-slate-100 rounded-xl p-1 "
+                className="flex justify-between items-center mt-3 bg-slate-100 rounded-xl p-1"
               >
                 <div className="flex flex-col">
-                  <div>{user.email}</div>
-                  <div>{user.name}</div>
+                  <div className="flex">
+                    email: &nbsp;<p className="font-medium">{user.email}</p>
+                  </div>
+                  <div className="flex">
+                    name: &nbsp;<p className="font-medium">{user.name}</p>
+                  </div>
                 </div>
-                <button>{user.isAdmin ? 'remove admin' : 'make  admin'}</button>
+                <button
+                  className={`rounded-lg px-2 py-2 text-sm active:scale-95 transition-all text-white  ${
+                    user.isAdmin ? 'bg-red-600' : 'bg-blue-600'
+                  }`}
+                  onClick={() => updateAdmin(user._id)}
+                >
+                  {user.isAdmin ? 'remove ' : 'add'}
+                </button>
               </div>
             ))}
         </div>
       </div>
-    </>
+    </div>
   )
 }
 export default AdminProfilePage
