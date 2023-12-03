@@ -101,7 +101,7 @@ const ProductCard = ({ product, isLoggedIn, setLoginModal }) => {
                     (price * (100 - Number(discount))) / 100
                   )}`}</p>
                 </div>
-                <div className="flex mt-3 ml-3 text-gray-400 line-through">
+                <div className="flex mt-3 ml-3 text-gray-600 line-through">
                   <p className="font-medium text-xs">{'\u20B9 '}</p>
                   <p className="text-sm sm:text-md  font-medium  h-3 ">{`${price}`}</p>
                 </div>
@@ -117,10 +117,14 @@ const ProductCard = ({ product, isLoggedIn, setLoginModal }) => {
 
             <p
               className={`${
-                stock < 10 ? 'text-red-500' : 'text-violet-500'
+                stock < 5 ? 'text-red-500' : 'text-violet-500'
               } text-sm whitespace-nowrap mb-2`}
             >
-              {stock < 10 ? `Hurry, only ${stock} left!` : 'Available'}
+              {stock < 5
+                ? stock < 1
+                  ? 'Stock Out'
+                  : `Hurry, only ${stock} left!`
+                : 'Available'}
             </p>
           </div>
         </Link>

@@ -143,7 +143,19 @@ const ProductDetailsPage = () => {
           <div className="flex flex-col sm:flex-row justify-center items-center gap-x-4 md:gap-x-6 lg:gap-x-10 sm:px-2 md:mx-4 p-2 w-full">
             {/* ḷeft */}
             <div className=" flex flex-col self-start mx-auto max-h-fit items-center">
-              <div className=" mb-2 object-cover  flex justify-center aspect-square w-96 sm:w-[350px rounded-md mb-5 md:w-[430px] lg:w-[530px] overflow-hidden shadow-md shadow-purple-100 p-2">
+              <div className="relative mb-2 object-cover  flex justify-center aspect-square w-96 sm:w-[350px rounded-md mb-5 md:w-[430px] lg:w-[530px] overflow-hidden shadow-md shadow-purple-100 p-2">
+                {discount > 0 && (
+                  <div className="absolute -top-0 -left-1 ">
+                    <img
+                      src="../../../../assets/icons/discount.png"
+                      alt="discount"
+                      className=" w-16"
+                    />
+                    <p className="absolute -rotate-12 text-lg top-4 left-3 text-white font-bold">
+                      -{discount}%
+                    </p>
+                  </div>
+                )}
                 <img
                   src={images[index]}
                   alt="main product image"
@@ -220,7 +232,7 @@ const ProductDetailsPage = () => {
                 <h2>Stock :</h2>
                 <p
                   className={`text-${
-                    stock < 50 ? 'red-500' : 'sky-600'
+                    stock < 10 ? 'red-500' : 'sky-600'
                   } text whitespace-nowrap `}
                 >
                   {stock < 10

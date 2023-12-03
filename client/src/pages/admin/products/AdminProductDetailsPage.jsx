@@ -124,7 +124,7 @@ const AdminProductDetailsPage = () => {
                       alt="discount"
                       className=" w-16"
                     />
-                    <p className="absolute -rotate-12 text-xl top-4 left-4 text-white font-semibold">
+                    <p className="absolute -rotate-12 text-lg top-4 left-3 text-white font-bold">
                       -{discount}%
                     </p>
                   </div>
@@ -239,7 +239,7 @@ const AdminProductDetailsPage = () => {
                 <h2>Stock status:</h2>
                 <p
                   className={`text-${
-                    stock < 50 ? 'red-500' : 'sky-600'
+                    stock < 10 ? 'red-500' : 'sky-600'
                   } text whitespace-nowrap `}
                 >
                   {stock < 10
