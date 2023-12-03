@@ -6,12 +6,7 @@ import Address from '../Models/addressModel.js'
 //@access private
 const fetchAddress = asyncHandler(async (req, res) => {
   const userId = req.user.id
-  if (!userId) {
-    res.status(400).json({
-      message: 'User not authenticated',
-      success: false,
-    })
-  }
+
   try {
     const address = await Address.findOne({ user: userId })
     if (address) {
@@ -24,7 +19,7 @@ const fetchAddress = asyncHandler(async (req, res) => {
       res.status(200).json({
         message: 'no address found',
         success: false,
-        address: {},
+        address: [],
       })
     }
   } catch (error) {

@@ -7,7 +7,7 @@ import Wallet from '../Models/walletModel.js'
 import Transaction from '../Models/transactionModel.js'
 import User from '../Models/userModel.js'
 import { createOrderFn } from '../Utils/razorpay.js'
-import { orderSuccess } from '../Utils/nodemailer.js'
+import { orderSuccessMail } from '../Utils/nodemailer.js'
 
 //@desc Place the order
 //@route POST/api/v1/payment/new-order
@@ -18,6 +18,8 @@ const createOrder = asyncHandler(async (req, res) => {
     const { useWallet } = req.body
 
     const cart = await Cart.findOne({ user: userId })
+
+    // console.log('cart: ', cart)
 
     if (!cart) {
       return res.status(404).json({ success: false, error: 'Cart not found.' })
@@ -128,7 +130,7 @@ const confirmPayment = asyncHandler(async (req, res) => {
       const savedTransaction = await transaction.save()
 
       // nodemailer custom function
-      await orderSuccess('astrophile1380@gmail.com', order)
+      await orderSuccessMail(user.email, order)
 
       res.status(200).json({
         success: true,

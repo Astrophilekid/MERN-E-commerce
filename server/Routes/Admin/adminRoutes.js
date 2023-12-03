@@ -10,6 +10,8 @@ import {
   adminLogout,
   updateUserStatus,
   viewAllUsers,
+  fetchAdmins,
+  updateStatus,
   searchSuggestion,
 } from '../../Controllers/Admin/adminUserController.js'
 
@@ -24,22 +26,43 @@ import {
 import {
   updateOrderStatus,
   viewOrders,
-} from '../../Controllers/Admin/AdminOrderController.js'
+} from '../../Controllers/Admin/adminOrderController.js'
 import { getProfile } from '../../Controllers/userController.js'
+
+//admin general controllers input
+import {
+  getCategoryStats,
+  getIncomePerDayStats,
+  getNewUsersPerDayStats,
+  getSalesPerDayStats,
+} from '../../Controllers/Admin/adminController.js'
 
 //admin routes
 router.post('/login', adminLogin)
 router.post('/logout', adminLogout)
 router.get('/profile', isAdmin, getProfile)
 
+// admin dashboard
+router.get('/stats/sales-per-category', isAdmin, getCategoryStats)
+router.get('/stats/income-per-day', isAdmin, getIncomePerDayStats)
+router.get('/stats/users-per-day', isAdmin, getNewUsersPerDayStats)
+router.get('/stats/sales-per-model', isAdmin, getSalesPerDayStats)
+
 //admin-product routes
 router.post('/add-product', isAdmin, upload.array('images', 4), addProduct)
-router.put('/update-product', isAdmin, upload.array('images', 4), updateProduct)
+router.put(
+  '/update-product/:id',
+  isAdmin,
+  upload.array('images', 4),
+  updateProduct
+)
 router.patch('/toggle-soft-delete/:id', isAdmin, toggleSoftDelete)
 
 //admin-user routes
 router.patch('/update-user-status/:id', isAdmin, updateUserStatus)
 router.get('/view-all-users', isAdmin, viewAllUsers)
+router.get('/admins', isAdmin, fetchAdmins)
+router.put('/update-status/:id', isAdmin, updateStatus)
 router.get('/search-user', isAdmin, searchUser)
 router.get('/search-suggestion', isAdmin, searchSuggestion)
 

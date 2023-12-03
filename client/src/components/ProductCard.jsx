@@ -3,10 +3,12 @@ import { COLORS } from '../styles/color'
 import { Link, useNavigate } from 'react-router-dom'
 import { Rate } from 'antd'
 import axios from 'axios'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { setCart } from '../slices/cartSlice'
+import LoginToContinue from './modals/LoginModal'
+import { useState } from 'react'
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, isLoggedIn, setLoginModal }) => {
   const {
     _id,
     name,
@@ -24,18 +26,23 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate()
 
   const addToCart = async () => {
-    try {
-      const { data } = await axios.post(`/cart/add/${_id}`)
-      console.log(data)
-      if (data.success) {
-        console.log('Product added to the cart successfully!')
-        dispatch(setCart(data.cart))
-        navigate('/cart')
-      } else {
-        alert(`add to cart failed`)
+    if (!isLoggedIn) {
+      setLoginModal(true)
+      return
+    } else {
+      try {
+        const { data } = await axios.post(`/cart/add/${_id}`)
+        console.log(data)
+        if (data.success) {
+          console.log('Product added to the cart successfully!')
+          dispatch(setCart(data.cart))
+          navigate('/cart')
+        } else {
+          alert(`add to cart failed`)
+        }
+      } catch (error) {
+        console.log(error)
       }
-    } catch (error) {
-      console.log(error)
     }
   }
 
@@ -52,6 +59,18 @@ const ProductCard = ({ product }) => {
         whileTap={{ scale: 0.95 }}
         className="relative -mb-2  mx-auto m-10 flex w-full my-0 sm:my-2 lg:my-4  flex-col overflow-hidden rounded-lg border border-gray-100 h-92 sm:h-[470px] px-2 pb-5 whitespace-nowrap bg-white shadow-md hover:shadow-2xl  "
       >
+        {discount > 0 && (
+          <div className="absolute -top-3 -right-3 ">
+            <img
+              src="../../assets/icons/discount.png"
+              alt="discount"
+              className=" w-16"
+            />
+            <p className="absolute rotate-12 text-xl top-5 left-3 text-white font-semibold">
+              -{discount}%
+            </p>
+          </div>
+        )}
         {/* Link to the product details page */}
         <Link
           to={`/product/${_id}`}
@@ -62,8 +81,10 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Bottom  */}
-          <div className="flex flex-col px-3  my-4 sm:my-auto ">
-            <p className="text-lg sm:text-xl my-2 ">{name}</p>
+          <div className="flex flex-col max-w-full px-3   my-4 sm:my-auto ">
+            <p className="text-lg sm:text-xl my-2 whitespace-nowrap  overflow-hidden text-ellipsis">
+              {name}
+            </p>
             <div className="flex  gap-x-3 ">
               <Rate allowHalf defaultValue={avgRating} disabled />
               <p className="text-sm font-medium text-slate-600 opacity-80">

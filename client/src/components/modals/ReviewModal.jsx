@@ -33,6 +33,9 @@ const ReviewModal = ({ productId, setReviewModal, fetchReviews }) => {
       className="fixed z-50 top-0 right-0 left-0 bottom-0 flex justify-center items-center"
       style={{ background: 'rgba(0,0,0,0.8)' }}
     >
+      <div className="absolute right-10 top-5" onClick={setReviewModal()}>
+        <img src="../../../assets/icons/modal-close.png" alt="" />
+      </div>
       <div className="w-2/5 max-sm:w-4/5 h-fit  p-5 flex flex-col bg-slate-50 rounded-md">
         <div>
           <h1 className="text-xl mb-3 font-medium">Add review</h1>

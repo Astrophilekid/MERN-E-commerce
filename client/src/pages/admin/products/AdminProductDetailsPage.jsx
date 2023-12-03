@@ -4,30 +4,60 @@ import { COLORS } from '../../../styles/color'
 import axios from 'axios'
 import { Rate } from 'antd'
 import ProductDetailsSkelton from '../../../components/skeltons/ProductDetailsSkelton'
-import AddProduct from '../../../components/admin/AddProduct'
 import DeleteModal from '../../../components/modals/DeleteModal'
 import Loading from '../../../components/Loading'
+import UpdateProduct from '../../../components/admin/UpdateProduct'
+import CustomAlert from '../../../components/CustomAlert'
 
 const AdminProductDetailsPage = () => {
   const [product, setProduct] = useState({})
   const [isLoading, setIsLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
   const [index, setIndex] = useState(0)
-  const [rating, setRating] = useState(0)
   const [modal, setModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteModal, setDeleteModal] = useState(false)
+
+  const [reviews, setReviews] = useState([])
+  const [isReviewsLoading, setIsReviewsLoading] = useState(false)
   const { id } = useParams()
 
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+  const [alertTheme, setAlertTheme] = useState('success')
+
+  const fetchProduct = async () => {
+    try {
+      const { data } = await axios.get(`/products/${id}`)
+      if (data.success) {
+        setProduct(data.product)
+        setTimeout(() => {
+          setIsLoading(false)
+        }, 2000)
+      }
+    } catch (error) {
+      console.error(error)
+      alert('something went wrong')
+    }
+  }
+
+  const fetchReviews = async () => {
+    setIsReviewsLoading(true)
+    try {
+      const { data } = await axios.get(`/reviews/${id}`)
+
+      setReviews(data.reviews)
+      setIsReviewsLoading(false)
+    } catch (error) {
+      setIsReviewsLoading(false)
+      console.error('Error fetching reviews:', error)
+    }
+  }
+
   useEffect(() => {
-    setIsLoading(true)
-    axios.get(`/products/${id}`).then(({ data }) => {
-      setProduct(data.product)
-      setTimeout(() => {
-        setIsLoading(false)
-      }, 500)
-    })
-  }, [])
+    fetchProduct()
+    fetchReviews()
+  }, [isLoading])
 
   const {
     _id,
@@ -42,7 +72,6 @@ const AdminProductDetailsPage = () => {
     stock,
     numOfReviews,
     avgRating,
-    reviews = [],
   } = product
 
   return (
@@ -50,7 +79,15 @@ const AdminProductDetailsPage = () => {
       {isLoading ? (
         <ProductDetailsSkelton />
       ) : (
-        <div className="flex  flex-col mt-14 max-sm:px-2 justify-center overflow-hidden transition-all ease-in-out">
+        <div className="relative flex flex-col mt-14 max-sm:px-2 justify-center overflow-hidden transition-all ease-in-out">
+          <div className="absolute top-5 right-52">
+            <CustomAlert
+              open={alertOpen}
+              theme={alertTheme}
+              setOpen={setAlertOpen}
+              message={alertMessage}
+            />
+          </div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-x-4 md:gap-x-6 lg:gap-x-10 sm:px-2 md:mx-4 p-2 w-full">
             {/* mobile view edit/delete icon */}
             <div className="hidden max-sm:flex gap-x-3 h-10 w-full justify-end">
@@ -79,7 +116,19 @@ const AdminProductDetailsPage = () => {
             </div>
             {/* ḷeft */}
             <div className=" flex flex-col self-start mx-auto max-h-fit items-center">
-              <div className=" mb-2 object-cover  flex justify-center aspect-square w-96 sm:w-[350px rounded-md mb-5 md:w-[430px] lg:w-[530px] overflow-hidden shadow-md shadow-purple-100 p-2">
+              <div className="relative mb-2 object-cover  flex justify-center aspect-square w-96 sm:w-[350px rounded-md mb-5 md:w-[430px] lg:w-[530px] overflow-hidden shadow-md shadow-purple-100 p-2">
+                {discount > 0 && (
+                  <div className="absolute -top-0 -left-1 ">
+                    <img
+                      src="../../../../assets/icons/discount.png"
+                      alt="discount"
+                      className=" w-16"
+                    />
+                    <p className="absolute -rotate-12 text-xl top-4 left-4 text-white font-semibold">
+                      -{discount}%
+                    </p>
+                  </div>
+                )}
                 <img
                   src={images[index]}
                   alt="main product image"
@@ -110,6 +159,18 @@ const AdminProductDetailsPage = () => {
                   ))}
               </div>
             </div>
+            {/*Update Modal  */}
+            {modal && (
+              <UpdateProduct
+                id={id}
+                setModal={setModal}
+                fetchProduct={fetchProduct}
+                setAlertOpen={setAlertOpen}
+                setAlertMessage={setAlertMessage}
+                setAlertTheme={setAlertTheme}
+                setIsLoading={setIsLoading}
+              />
+            )}
 
             {/* right */}
             <div className="flex gap-y-2 max-sm:mx-3 md:px-4 mr-3 flex-col self-start w-full mx-auto px-2 mt-6 ">
@@ -181,7 +242,11 @@ const AdminProductDetailsPage = () => {
                     stock < 50 ? 'red-500' : 'sky-600'
                   } text whitespace-nowrap `}
                 >
-                  {stock < 50 ? `Hurry, only ${stock} left!` : 'Available'}
+                  {stock < 10
+                    ? stock < 1
+                      ? 'Stock Out'
+                      : `Hurry, only ${stock} left!`
+                    : 'Available'}
                 </p>
               </div>
 
@@ -209,11 +274,21 @@ const AdminProductDetailsPage = () => {
           <div className="bg-violet-50 mx-4 flex flex-col py-3 my-3 items-start rounded-lg p-2 ">
             <p className="text-lg font-medium ml-1 mb-3">Reviews</p>
             {reviews.length > 0 ? (
-              <div className="bg-violet-200 rounded-2xl p-2 w-full">
-                <h2>Ajesh</h2>
-                <p>rating: 4/5</p>
-                <p>Best phone of the year</p>
-              </div>
+              reviews.map((review) => (
+                <div
+                  key={review._id}
+                  className="relative bg-violet-100 py-4 mb-2 rounded-2xl p-2 w-full"
+                >
+                  <h2 className="font-semibold">{review.name}</h2>
+                  <Rate
+                    allowHalf
+                    defaultValue={review.rating}
+                    style={{ scale: '0.8', marginLeft: '-1rem' }}
+                    disabled
+                  />
+                  <p>{review.review}</p>
+                </div>
+              ))
             ) : (
               <p className="text-sm font-semibold text-slate-500">
                 No reviews yet

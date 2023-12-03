@@ -5,12 +5,20 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import Loading from '../Loading'
 
-const AddProduct = ({ setModal, setLoading }) => {
+const UpdateProduct = ({
+  setModal,
+  id,
+  setAlertOpen,
+  setAlertMessage,
+  setAlertTheme,
+  setIsLoading,
+}) => {
   const [name, setName] = useState('')
   const [category, setCategory] = useState('')
   const [brand, setBrand] = useState('')
   const [description, setDescription] = useState('')
   const [price, setPrice] = useState('')
+  const [discount, setDiscount] = useState()
   const [images, setImages] = useState([])
   const [stock, setStock] = useState('')
   const [isFormValid, setIsFormValid] = useState(true)
@@ -19,36 +27,63 @@ const AddProduct = ({ setModal, setLoading }) => {
 
   const handleImageChange = (event) => {
     if (event.target.files.length > 0) {
-      const newImages = Array.from(event.target.files)
+      const newImages = Array.from(event.target.files).map((file) => ({
+        file,
+        type: 'file',
+      }))
 
-      // Combine the newly selected images with the existing ones, limited to 4
       const combinedImages = [...images, ...newImages].slice(0, 4)
 
-      // Update 'images' state with the limited number of images
       setImages(combinedImages)
     }
   }
 
-  const removePhoto = (image) => {
+  const removePhoto = (image, e) => {
+    e.preventDefault()
     setImages([...images.filter((photo) => photo !== image)])
   }
 
-  const selectAsMainPhoto = (image) => {
+  const selectAsMainPhoto = (image, e) => {
+    e.preventDefault()
     setImages([image, ...images.filter((photo) => photo !== image)])
   }
 
-  const addProduct = async (e) => {
+  const updateProduct = async (e) => {
     e.preventDefault()
-    setLoading(true)
+
     setModal(false)
+    setIsLoading(true)
+    setAlertOpen(true)
+    setAlertMessage('product is updating...')
+    setAlertTheme('success')
 
     try {
       const formData = new FormData()
 
-      // Append 'images' to the formData
-      images.forEach((img, index) => {
-        formData.append(`images`, img)
-      })
+      // Check if all images are of type 'file' or 'url'
+      const areAllFiles = images.every((img) => img.type === 'file')
+      const areAllUrls = images.every((img) => img.type !== 'file')
+
+      if (areAllFiles) {
+        // Case 1: All new images, remove existing images
+        images.forEach((img) => {
+          formData.append('images', img.file)
+        })
+      } else if (areAllUrls) {
+        // Case 2: No image changes, use existing URLs
+        images.forEach((img) => {
+          formData.append('image', img)
+        })
+      } else {
+        // Case 3: Mixed types (both URLs and files)
+        images.forEach((img) => {
+          if (img.type === 'file') {
+            formData.append('images', img.file)
+          } else {
+            formData.append('image', img)
+          }
+        })
+      }
 
       // Append other form fields to the formData
       formData.append('name', name)
@@ -57,27 +92,57 @@ const AddProduct = ({ setModal, setLoading }) => {
       formData.append('description', description)
       formData.append('price', price)
       formData.append('stock', stock)
+      formData.append('discount', discount)
 
-      const { data } = await axios.post('/admin/add-product', formData, {
-        headers: { 'Content-type': 'multipart/form-data' },
-      })
+      const { data } = await axios.put(
+        `/admin/update-product/${id}`,
+        formData,
+        {
+          headers: { 'Content-type': 'multipart/form-data' },
+        }
+      )
 
       if (data.success) {
-        alert(`Product added successfully`)
-        setLoading(false)
-        navigate('/admin/products')
+        setIsLoading(false)
+        setAlertOpen(true)
+        setAlertMessage('product updated successfully')
+        setAlertTheme('success')
+        setTimeout(() => {
+          fetchProduct()
+        }, 3000)
       } else {
-        alert('failed to add product!')
-        setLoading(false)
-        navigate('/admin/products')
+        setAlertOpen(true)
+        setAlertMessage('product update failed')
+        setAlertTheme('error')
       }
     } catch (error) {
       console.error(error.response.data)
-      alert('something went wrong!')
-      navigate('/admin/products')
-      setLoading(false)
+      setAlertOpen(true)
+      setAlertMessage('something went wrong')
+      setAlertTheme('error')
     }
   }
+
+  const fetchProduct = async () => {
+    try {
+      const { data } = await axios.get(`/products/${id}`)
+      if (data.success) {
+        setName(data.product.name)
+        setCategory(data.product.category)
+        setBrand(data.product.brand)
+        setDescription(data.product.description)
+        setPrice(data.product.price)
+        setImages(data.product.images)
+        setDiscount(data.product.discount)
+        setStock(data.product.stock)
+      }
+    } catch (error) {
+      console.error(error)
+    }
+  }
+  useEffect(() => {
+    fetchProduct()
+  }, [])
 
   return (
     <div
@@ -89,10 +154,10 @@ const AddProduct = ({ setModal, setLoading }) => {
           className="text-3xl font-bold mb-3"
           style={{ color: COLORS.BACKGROUND }}
         >
-          Add Product
+          Update Product
         </h1>
         <form
-          onSubmit={addProduct}
+          onSubmit={updateProduct}
           className="grid md:grid-cols-2 w-[80%] gap-x-10 mt-3"
         >
           <div>
@@ -147,6 +212,18 @@ const AddProduct = ({ setModal, setLoading }) => {
               pattern="^[a-zA-Z0-9\s]{1,1000}$"
               className="h-32 p-2 placeholder:font-semibold placeholder:text-gray-400" // You can adjust the height as needed
             />
+
+            <FormInput
+              label="Discount"
+              type="number"
+              name="discount"
+              placeholder="Product's discount"
+              errorMessage="enter a valid discount"
+              value={discount}
+              onchange={setDiscount}
+              pattern="^[0-9]{1,3}$"
+              isFormValid={isFormValid}
+            />
           </div>
 
           {/* break point */}
@@ -160,15 +237,23 @@ const AddProduct = ({ setModal, setLoading }) => {
                         key={i}
                         className=" max-h-full h-full w-16  relative "
                       >
-                        <img
-                          src={URL.createObjectURL(img)}
-                          alt="product image"
-                          className="object-contain h-full w-full max-h-full max-w-full rounded-lg"
-                        />
+                        {img.type === 'file' ? (
+                          <img
+                            src={URL.createObjectURL(img.file)}
+                            alt="product image"
+                            className="object-contain h-full w-full max-h-full max-w-full rounded-lg"
+                          />
+                        ) : (
+                          <img
+                            src={img}
+                            alt="product image"
+                            className="object-contain h-full w-full max-h-full max-w-full rounded-lg"
+                          />
+                        )}
 
                         <button
-                          onClick={(e) => removePhoto(img)}
-                          className="absolute bottom-1 right-1 text-red-600 bg-black p-1 bg-opacity-50 rounded-2xl cursor-pointer"
+                          onClick={(e) => removePhoto(img, e)}
+                          className="absolute  bottom-1 right-1 text-red-600 bg-black p-1 bg-opacity-30  rounded-2xl cursor-pointer"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -176,7 +261,7 @@ const AddProduct = ({ setModal, setLoading }) => {
                             viewBox="0 0 24 24"
                             strokeWidth={1.5}
                             stroke="currentColor"
-                            className="w-6 h-6"
+                            className="w-4"
                           >
                             <path
                               strokeLinecap="round"
@@ -188,7 +273,7 @@ const AddProduct = ({ setModal, setLoading }) => {
 
                         {/* make as main image */}
                         <button
-                          onClick={(e) => selectAsMainPhoto(img)}
+                          onClick={(e) => selectAsMainPhoto(img, e)}
                           className="absolute top-1 right-1 text-white bg-black p-1 bg-opacity-50 rounded-2xl cursor-pointer"
                         >
                           {img === images[0] && (
@@ -196,7 +281,7 @@ const AddProduct = ({ setModal, setLoading }) => {
                               xmlns="http://www.w3.org/2000/svg"
                               viewBox="0 0 24 24"
                               fill="currentColor"
-                              className="w-6 h-6  text-yellow-400"
+                              className="w-4 text-yellow-400"
                             >
                               <path
                                 fillRule="evenodd"
@@ -212,7 +297,7 @@ const AddProduct = ({ setModal, setLoading }) => {
                               viewBox="0 0 24 24"
                               strokeWidth={1.5}
                               stroke="currentColor"
-                              className="w-6 h-6"
+                              className="w-4"
                             >
                               <path
                                 strokeLinecap="round"
@@ -236,7 +321,7 @@ const AddProduct = ({ setModal, setLoading }) => {
                   type="file"
                   multiple
                   className="hidden"
-                  onChange={handleImageChange}
+                  onChange={(e) => handleImageChange(e)}
                   accept="image/*"
                   disabled={images.length >= 4}
                 />
@@ -286,7 +371,7 @@ const AddProduct = ({ setModal, setLoading }) => {
               type="submit"
               className="w-full py-2 items-end  relative bottom-0 text-slate-300 mt-4 font-bold rounded-lg  text-sm bg-slate-800  hover:text-white hover:bg-slate-950"
             >
-              Add Product
+              Update Product
             </button>
           </div>
         </form>
@@ -300,4 +385,4 @@ const AddProduct = ({ setModal, setLoading }) => {
     </div>
   )
 }
-export default AddProduct
+export default UpdateProduct

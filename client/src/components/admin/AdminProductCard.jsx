@@ -99,9 +99,11 @@ const AdminProductCard = ({
         </Link>
 
         {/* Bottom  */}
-        <div className="flex flex-col px-3 justify-start w-full ml-3  my-4 sm:my-auto ">
+        <div className="flex flex-col px-3 justify-start w-full  max-w-full  ml-3  my-4 sm:my-auto ">
           <Link to={`/admin/product/${_id}`}>
-            <p className="text-lg sm:text-xl my-2 ">{name}</p>
+            <p className="text-lg sm:text-xl my-2 whitespace-nowrap overflow-hidden text-ellipsis">
+              {name}
+            </p>
             <div className="flex  gap-x-3 ">
               <Rate allowHalf defaultValue={avgRating} disabled />
               <p className="text-sm font-medium text-slate-600 opacity-80">

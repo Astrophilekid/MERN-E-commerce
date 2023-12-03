@@ -63,12 +63,31 @@ const addProduct = asyncHandler(async (req, res) => {
 const updateProduct = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params
-    const { name, category, brand, description, price, stock, discount } =
-      req.body
+    const {
+      name,
+      category,
+      brand,
+      description,
+      price,
+      stock,
+      discount,
+      year,
+      image,
+    } = req.body
 
-    // console.log(req.files)
+    // console.log('image: ', image)
 
     const images = req.files.map((file) => file.path)
+
+    let combinedImages
+
+    if (Array.isArray(image)) {
+      combinedImages = [...image, ...images]
+    } else {
+      combinedImages = [image, ...images]
+    }
+
+    // console.log('combined :', combinedImages)
 
     const existingProduct = await Product.findById(id)
 
@@ -87,7 +106,7 @@ const updateProduct = asyncHandler(async (req, res) => {
     existingProduct.brand = brand || existingProduct.brand
     existingProduct.stock = stock || existingProduct.stock
     existingProduct.discount = discount || existingProduct.discount
-    existingProduct.images = images || existingProduct.images
+    existingProduct.images = combinedImages || existingProduct.images
 
     const updatedProduct = await existingProduct.save()
 

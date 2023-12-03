@@ -8,6 +8,7 @@ import { setCart } from '../slices/cartSlice'
 import ReviewModal from '../components/modals/ReviewModal'
 import { CircularProgress } from '@mui/material'
 import { checkTokenExpiration } from '../slices/userSlice'
+import LoginToContinue from '../components/modals/LoginModal'
 
 const ProductDetailsPage = () => {
   const [product, setProduct] = useState({})
@@ -19,6 +20,7 @@ const ProductDetailsPage = () => {
   const [isExpanded, setIsExpanded] = useState(false)
   const [index, setIndex] = useState(0)
   const [reviewModal, setReviewModal] = useState(false)
+  const [loginModal, setLoginModal] = useState(false)
   const { id } = useParams()
 
   const dispatch = useDispatch()
@@ -30,7 +32,9 @@ const ProductDetailsPage = () => {
     dispatch(checkTokenExpiration())
   }, [dispatch])
 
-  const hasReviewed = reviews.some((review) => review.user === user.id)
+  let hasReviewed = isLoggedIn
+    ? reviews.some((review) => review.user === user.id)
+    : false
 
   useEffect(() => {
     setIsLoading(true)
@@ -48,12 +52,18 @@ const ProductDetailsPage = () => {
     setIsReviewsLoading(true)
     try {
       const { data } = await axios.get(`/reviews/${id}`)
-      const sortedReviews = data.reviews.sort((a, b) => {
-        if (a.user === user.id) return -1
-        if (b.user === user.id) return 1
-        return 0
-      })
-      setReviews(sortedReviews)
+      // console.log(isLoggedIn)
+      if (isLoggedIn === true) {
+        const sortedReviews = data.reviews.sort((a, b) => {
+          if (a.user === user.id) return -1
+          if (b.user === user.id) return 1
+          return 0
+        })
+        setReviews(sortedReviews)
+      } else {
+        setReviews(data.reviews)
+      }
+
       setAvgRating(data.avgRating)
       setNumOfReviews(data.numOfReviews)
       setIsReviewsLoading(false)
@@ -79,16 +89,31 @@ const ProductDetailsPage = () => {
   }, [])
 
   const addToCart = async () => {
-    try {
-      const { data } = await axios.post(`/cart/add/${_id}`)
-      // console.log(data)
-      if (data.success) {
-        dispatch(setCart(data.cart))
-        navigate('/cart')
-      } else {
-        alert(`add to cart failed`)
+    if (isLoggedIn) {
+      try {
+        const { data } = await axios.post(`/cart/add/${_id}`)
+        // console.log(data)
+        if (data.success) {
+          dispatch(setCart(data.cart))
+          navigate('/cart')
+        } else {
+          alert(`add to cart failed`)
+        }
+      } catch (error) {
+        console.error(error)
+        alert('add to cart failed')
       }
-    } catch (error) {}
+    } else {
+      setLoginModal(true)
+    }
+  }
+
+  const addReview = () => {
+    if (isLoggedIn) {
+      setReviewModal(true)
+    } else {
+      setLoginModal(true)
+    }
   }
 
   const deleteReview = async (reviewId) => {
@@ -195,10 +220,14 @@ const ProductDetailsPage = () => {
                 <h2>Stock :</h2>
                 <p
                   className={`text-${
-                    stock < 5 ? 'red-500' : 'sky-600'
+                    stock < 50 ? 'red-500' : 'sky-600'
                   } text whitespace-nowrap `}
                 >
-                  {stock < 5 ? `Hurry, only ${stock} left!` : 'Available'}
+                  {stock < 10
+                    ? stock < 1
+                      ? 'Stock Out'
+                      : `Hurry, only ${stock} left!`
+                    : 'Available'}
                 </p>
               </div>
 
@@ -239,6 +268,7 @@ const ProductDetailsPage = () => {
               setReviewModal={() => setReviewModal(false)}
             />
           )}
+          {loginModal && <LoginToContinue setLoginModal={setLoginModal} />}
           {/* reviews */}
           <div className="flex max-sm:flex-col mt-10  w-full h-fit px-3">
             {/* rating */}
@@ -278,7 +308,7 @@ const ProductDetailsPage = () => {
                 } whitespace-nowrap  h
               active:scale-95 text-white`}
                 disabled={hasReviewed}
-                onClick={() => setReviewModal(true)}
+                onClick={addReview}
               >
                 {hasReviewed ? 'already reviewed!' : 'Add a review'}
               </button>

@@ -62,10 +62,10 @@ const App = () => {
               </Route>
             </Route>
 
-            {/* admin layout */}
-            <Route path="admin/*" element={<AdminLayout />}>
-              {/* admin protected route */}
-              <Route element={<ProtectedRoute role="admin" />}>
+            {/* admin protected route */}
+            <Route element={<ProtectedRoute role="admin" />}>
+              {/* admin layout */}
+              <Route path="admin/*" element={<AdminLayout />}>
                 <Route index element={<AdminHomePage />} />
                 <Route path="products" element={<ProductsPage />} />
                 <Route

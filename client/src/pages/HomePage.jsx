@@ -6,6 +6,7 @@ import Pagination from '@mui/material/Pagination'
 import { filterProducts, searchProductApi } from '../api'
 import HomeProductSkelton from '../components/skeltons/HomeProductSkelton'
 import { useSelector } from 'react-redux'
+import LoginToContinue from '../components/modals/LoginModal'
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
@@ -15,9 +16,10 @@ const HomePage = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [isVisible, setIsVisible] = useState(false)
-
+  const [loginModal, setLoginModal] = useState(false)
   const searchResults = useSelector((state) => state.search.searchResults)
   const search = useSelector((state) => state.search.search)
+  const isLoggedIn = useSelector((state) => state.user.isLoggedIn)
 
   const fetchAllProducts = async () => {
     setIsLoading(true)
@@ -61,7 +63,14 @@ const HomePage = () => {
   const fetchProductsByCategory = async (category) => {
     try {
       const response = await filterProducts(page, { category })
-      setProducts(response.products)
+      if (response.success) {
+        setProducts(response.products)
+        setTotalPages(response.totalPages)
+        setTimeout(() => {
+          setPageLoading(false)
+          setIsLoading(false)
+        }, 1000)
+      }
     } catch (error) {
       console.error('Error fetching products:', error)
       setProducts([])
@@ -69,6 +78,7 @@ const HomePage = () => {
   }
 
   const handleCategorySelection = (category) => {
+    setPage(1)
     setSelectedCategory(category)
     window.scrollTo(0, 0)
     if (category === 'All') {
@@ -169,6 +179,8 @@ const HomePage = () => {
               product={product}
               pageLoading={pageLoading}
               key={product._id}
+              isLoggedIn={isLoggedIn}
+              setLoginModal={setLoginModal}
             />
           ))
         ) : (
@@ -177,6 +189,7 @@ const HomePage = () => {
           </div>
         )}
       </div>
+      {loginModal && <LoginToContinue setLoginModal={setLoginModal} />}
       {/* scroll to top button */}
       {isVisible && (
         <div

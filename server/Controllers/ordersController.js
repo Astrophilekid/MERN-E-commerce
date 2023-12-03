@@ -1,6 +1,8 @@
 import asyncHandler from 'express-async-handler'
 import Orders from '../Models/ordersModel.js'
 import Wallet from '../Models/walletModel.js'
+import { orderCancelMail } from '../Utils/nodemailer.js'
+import User from '../Models/userModel.js'
 
 //@desc Get orders of the user
 //@route GET /api/v1/orders
@@ -37,8 +39,11 @@ const cancelOrder = asyncHandler(async (req, res) => {
   try {
     const { orderId } = req.params
     const { reason } = req.body
+    const userId = req.user.id
 
     const order = await Orders.findById(orderId)
+
+    const user = await User.findById(userId)
 
     // console.log(order)
 
@@ -73,6 +78,7 @@ const cancelOrder = asyncHandler(async (req, res) => {
 
     await order.save()
     await userWallet.save()
+    await orderCancelMail(user.email, order)
 
     res.status(200).json({
       success: true,

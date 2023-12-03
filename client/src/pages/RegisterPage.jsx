@@ -76,9 +76,9 @@ const RegisterPage = () => {
           setShowOtpPage={setShowOtpPage}
         />
       ) : (
-        <div className="flex justify-center items-center  min-h-screen h-screen p-0 m-0">
+        <div className=" flex justify-center  items-center  min-h-screen p-0 m-0">
           {/* gradient side */}
-          <div className="w-1/2 max-md:hidden relative bottom-5 flex  h-full items-center justify-center ">
+          <div className="w-1/2 max-md:hidden  bottom-5 flex  h-full items-center justify-center ">
             <div className="mx-2 h-full">
               <TypeAnimation
                 sequence={[

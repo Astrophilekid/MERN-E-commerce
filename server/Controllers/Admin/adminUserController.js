@@ -16,6 +16,7 @@ const adminLogin = asyncHandler(async (req, res) => {
       success: false,
     })
   }
+  // console.log(email, password)
 
   const user = await User.findOne({ email }).select('+password')
 
@@ -45,9 +46,17 @@ const adminLogin = asyncHandler(async (req, res) => {
       maxAge: 3 * 24 * 60 * 60 * 1000,
     })
 
+    const userWithoutPassword = {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+    }
+
     res.status(201).json({
       message: 'admin logged in successfully',
       success: true,
+      user: userWithoutPassword,
     })
   } else {
     res.status(401).json({
@@ -96,6 +105,54 @@ const viewAllUsers = asyncHandler(async (req, res) => {
     res.status(500).json({
       status: false,
       error: 'Could not fetch Users: ' + error,
+    })
+  }
+})
+
+//@desc View admins
+//@route GET /api/v1/admin/admins
+//@access Private
+const fetchAdmins = asyncHandler(async (req, res) => {
+  try {
+    const admins = await User.find({ isAdmin: true })
+    res
+      .status(200)
+      .json({ message: 'Admins fetched successfully', success: true, admins })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: 'Internal server error while fetching admins',
+      success: false,
+    })
+  }
+})
+//@desc Update admin status
+//@route PUT /api/v1/admin/update-status/:id
+//@access private
+const updateStatus = asyncHandler(async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const admins = await User.find({ isAdmin: true })
+
+    const user = await User.findById(id)
+    if (admins.length <= 1 && user.isAdmin) {
+      return res
+        .status(400)
+        .json({ message: 'at least one admin is required', success: false })
+    }
+
+    user.isAdmin = !user.isAdmin
+    await user.save()
+    res.status(200).json({
+      message: "User's admin status updated successfully",
+      success: true,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: 'Internal server error while updating  admin status',
+      success: false,
     })
   }
 })
@@ -225,6 +282,8 @@ export {
   adminLogout,
   updateUserStatus,
   viewAllUsers,
+  fetchAdmins,
+  updateStatus,
   searchUser,
   searchSuggestion,
 }

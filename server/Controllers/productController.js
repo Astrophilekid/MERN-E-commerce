@@ -4,6 +4,7 @@ dotenv.config()
 import User from '../Models/userModel.js'
 import Product from '../Models/productModel.js'
 import Review from '../Models/reviewsModel.js'
+import Cart from '../Models/cartModel.js'
 
 //@desc Get All Products
 //@route GET/api/v1/products/view-all-products
@@ -78,7 +79,7 @@ const viewProductsByFilter = asyncHandler(async (req, res) => {
   const { category, year, brand, sortBy, sortOrder } = req.query
 
   try {
-    let query = {}
+    let query = { softDelete: false }
 
     if (category && category !== 'deleted-products') {
       query.category = category
@@ -192,10 +193,58 @@ const searchProduct = asyncHandler(async (req, res) => {
   }
 })
 
+//@desc Check product stock
+//@route GET /api/v1/products/stock
+//@access public
+const getStock = asyncHandler(async (req, res) => {
+  const userId = req.user.id
+  try {
+    const cart = await Cart.findOne({ user: userId })
+
+    if (!cart) {
+      return res.status(404).json({ success: false, error: 'Cart not found.' })
+    }
+
+    let prod
+    let outOfStock = false
+
+    for (const cartItem of cart.products) {
+      const { product: productId, quantity } = cartItem
+
+      const product = await Product.findById(productId)
+
+      if (!product || product.stock < quantity) {
+        prod = product.name
+        outOfStock = true
+        break
+      }
+    }
+
+    if (outOfStock) {
+      res.status(200).json({
+        success: false,
+        message: `${prod} is either unavailable or out of stock`,
+      })
+    } else {
+      res.status(200).json({
+        success: true,
+        message: 'Stock fetched successfully',
+      })
+    }
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while fetching stock',
+    })
+  }
+})
+
 export {
   viewAllProducts,
   viewProduct,
   viewProductsByFilter,
   searchSuggestion,
   searchProduct,
+  getStock,
 }

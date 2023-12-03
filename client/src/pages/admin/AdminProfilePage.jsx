@@ -178,23 +178,17 @@ const AdminProfilePage = () => {
                 created at &nbsp;
                 <p>: &nbsp; {new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
-              <Link
-                to="/forgot-password"
-                className="text-sm self-end text-blue-500"
-              >
-                reset password?
-              </Link>
             </div>
           )}
         </div>
         <div className="md:self-start flex flex-col w-96 md:mt-6 ">
-          <div className="flex flex-col mb-5 border rounded-lg p-2 h-40 max-h-60 overflow-y-auto">
+          <div className="flex flex-col mb-5 border rounded-lg p-2 bg-slate-100 h-40 max-h-60 overflow-y-auto">
             <h1 className="text-xl text-center mb-2 font-semibold">ADMINS</h1>
             {admins.length > 0 ? (
               admins.map((admin, i) => (
                 <div
                   key={i}
-                  className="flex justify-between items-center mt-3 bg-slate-100 rounded-xl p-2 mb-2 border-b"
+                  className="flex justify-between items-center mt-3 bg-slate-200 border-slate-300 shadow-md rounded-xl p-2 mb-2 border-b"
                 >
                   <div className="font-semibold">{admin.email}</div>
 
@@ -234,7 +228,7 @@ const AdminProfilePage = () => {
           {/* search results */}
           {search.length > 0 && !hasSearched && (
             <div className="relative w-full ">
-              <div className="absolute cursor-pointer top-2 z-50 w-full border shadow-md bg-purple-100 p-1 h-fit rounded-lg ">
+              <div className="absolute cursor-pointer top-2 z-50 w-full border shadow-md bg-slate-100 p-1 h-fit rounded-lg ">
                 {userList.length > 0 ? (
                   userList.map((value, i) => (
                     <p

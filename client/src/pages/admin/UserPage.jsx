@@ -8,7 +8,7 @@ import TextField from '@mui/material/TextField'
 
 const UserPage = () => {
   const [users, setUsers] = useState([])
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(0)
   const [limit, setLimit] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [totalPages, setTotalPages] = useState(1)

@@ -18,10 +18,18 @@ const storage = new CloudinaryStorage({
     const parts = file.originalname.split('.')
     const ext = parts[parts.length - 1]
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
+
+    let public_id
+    if (typeof file === 'string') {
+      public_id = 'url_' + uniqueSuffix
+    } else {
+      public_id = file.fieldname + '-' + uniqueSuffix
+    }
+
     return {
       folder: folderName,
       format: ext,
-      public_id: file.fieldname + '-' + uniqueSuffix,
+      public_id,
     }
   },
 })

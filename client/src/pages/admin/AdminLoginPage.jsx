@@ -59,7 +59,7 @@ const AdminLoginPage = () => {
   }
 
   return (
-    <div className="flex justify-center items-center max-md:bg-gradient-to-br from-red-400 to-violet-700 min-h-screen h-screen">
+    <div className="flex justify-center items-center max-md:bg-gradient-to-br from-slate-800 to-slate-600 min-h-screen h-screen">
       {/* gradient side */}
       <div className="w-1/2 lg:w-7/12 max-md:hidden h-full flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-500">
         <div className="mx-2">

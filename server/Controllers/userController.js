@@ -7,8 +7,9 @@ import Cart from '../Models/cartModel.js'
 import Wallet from '../Models/walletModel.js'
 import { generateToken } from '../Utils/generateToken.js'
 import twilio from 'twilio'
-import crypto from 'crypto'
 import bcrypt from 'bcrypt'
+import { generateRandomString } from '../Helpers/resetPasswordString.js'
+import { passwordResetTokenMail } from '../Utils/nodemailer.js'
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID,
@@ -86,10 +87,28 @@ const verifyOTP = asyncHandler(async (req, res) => {
 
       await Cart.create({ user: user._id, products: [] })
 
-      res.status(201).json({
-        message: `OTP verified and User registered successfully`,
-        success: true,
-      })
+      if (user) {
+        const token = generateToken(user._id)
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV !== 'development',
+          sameSite: 'strict',
+          maxAge: 3 * 24 * 60 * 60 * 1000,
+        })
+
+        const userWithoutPassword = {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+        }
+
+        res.status(201).json({
+          message: `OTP verified and User registered successfully`,
+          success: true,
+          user: userWithoutPassword,
+        })
+      }
     } else if (verifiedResponse.status === 'expired') {
       return res.status(400).json({
         errorType: 'ExpiredOTP',
@@ -121,35 +140,43 @@ const login = asyncHandler(async (req, res) => {
       .status(400)
       .json({ message: 'All fields are mandatory', success: false })
   }
+  try {
+    const user = await User.findOne({ email }).select('+password')
 
-  const user = await User.findOne({ email }).select('+password')
+    // console.log(user, email, password)
+    if (user && (await user.matchPassword(password))) {
+      const token = generateToken(user._id)
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV !== 'development',
+        sameSite: 'strict',
+        maxAge: 3 * 24 * 60 * 60 * 1000,
+      })
 
-  // console.log(user, email, password)
-  if (user && (await user.matchPassword(password))) {
-    const token = generateToken(user._id)
-    res.cookie('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
-      maxAge: 3 * 24 * 60 * 60 * 1000,
-    })
+      const userWithoutPassword = {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+      }
 
-    const userWithoutPassword = {
-      id: user._id,
-      name: user.name,
-      email: user.email,
+      res.status(201).json({
+        message: 'user logged in successfully',
+        success: true,
+        user: userWithoutPassword,
+      })
+    } else {
+      res.status(401).json({
+        errorType: 'InvalidCredentials',
+        message: 'Invalid email or password!',
+        success: false,
+      })
     }
-
-    res.status(201).json({
-      message: 'user logged in successfully',
-      success: true,
-      user: userWithoutPassword,
-    })
-  } else {
-    res.status(401).json({
-      errorType: 'InvalidCredentials',
-      message: 'Invalid email or password!',
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
       success: false,
+      message: 'Login failed',
     })
   }
 })
@@ -235,21 +262,24 @@ const forgotPassword = asyncHandler(async (req, res) => {
 
     const user = await User.findOne({ email })
     if (!user) {
-      return res.status(404).json({ message: 'user not found', success: false })
+      return res
+        .status(404)
+        .json({ message: 'email not found', success: false })
     }
 
-    const resetToken = crypto.randomBytes(20).toString('hex')
+    const resetToken = generateRandomString()
     user.resetToken = resetToken
     user.resetTokenExp = Date.now() + 1000 * 6 * 10
 
     await user.save()
+    await passwordResetTokenMail(resetToken, email)
     res
       .status(200)
       .json({ resetToken, message: 'Password reset token sent', success: true })
   } catch (error) {
     console.error('Error generating reset token', error)
     res.status(500).json({
-      message: 'An error occurred while generating the reset token : ' + error,
+      message: 'Internal server error',
       success: false,
     })
   }
@@ -261,6 +291,8 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const resetPassword = asyncHandler(async (req, res) => {
   try {
     const { newPassword, resetToken } = req.body
+
+    // console.log(newPassword, resetToken)
 
     const user = await User.findOne({
       resetToken,
@@ -279,13 +311,16 @@ const resetPassword = asyncHandler(async (req, res) => {
     user.resetTokenExp = null
     await user.save()
 
+    // console.log(user)
+
     res
       .status(200)
       .json({ success: true, message: 'password reset successfully' })
   } catch (error) {
     console.error('error resetting password', error)
     res.status(500).json({
-      error: 'An error occurred while resetting password' + error.message,
+      success: false,
+      message: 'Internal server error',
     })
   }
 })

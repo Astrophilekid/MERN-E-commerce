@@ -1,67 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import Chart from 'chart.js/auto'
+import CategoryStats from '../../components/admin/dashboards/CategoryStats'
+import IncomeStats from '../../components/admin/dashboards/IncomeStats'
+import UserStats from '../../components/admin/dashboards/UserStats'
+import SalesPerModel from '../../components/admin/dashboards/SalesPerModel'
 
 const AdminHomePage = () => {
-  const [categoryStats, setCategoryStats] = useState([])
-  const [incomeStats, setIncomeStats] = useState([])
-  const chartRef = useRef(null)
-  const incomeChartRef = useRef(null)
+  const [userStats, setUserStats] = useState([])
 
-  const labels = categoryStats.map((stat) => stat._id)
-  const data = categoryStats.map((stat) => stat.totalQuantity)
+  const userChartRef = useRef(null)
 
-  const fetchSalesPerCategory = async () => {
+  const fetchUsersPerDay = async () => {
     try {
-      const { data } = await axios.get('/admin/stats/sales-per-category')
+      const { data } = await axios.get('/admin/stats/users-per-day')
+      // console.log(data)
       if (data.success) {
-        setCategoryStats(data.categoryStats)
-      }
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
-  const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#AA6384', '#2CA21B']
-
-  useEffect(() => {
-    let myChart
-    if (chartRef.current) {
-      const ctx = chartRef.current.getContext('2d')
-      if (myChart) {
-        myChart.destroy()
-      }
-      myChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Sales per Category',
-              data: data,
-              backgroundColor: colors, // Use the colors array here
-              borderColor: 'rgba(75, 192, 192, 1)', // customize as needed
-              borderWidth: 1, // customize as needed
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-        },
-      })
-    }
-    return () => {
-      if (myChart) {
-        myChart.destroy()
-      }
-    }
-  }, [chartRef, labels, data])
-
-  const fetchIncomePerDay = async () => {
-    try {
-      const { data } = await axios.get('/admin/stats/income-per-day')
-      if (data.success) {
-        setIncomeStats(data.incomeStats)
+        setUserStats(data.userStats)
       }
     } catch (error) {
       console.error(error)
@@ -70,21 +25,21 @@ const AdminHomePage = () => {
 
   useEffect(() => {
     let myChart
-    if (incomeChartRef.current) {
-      const ctx = incomeChartRef.current.getContext('2d')
+    if (userChartRef.current) {
+      const ctx = userChartRef.current.getContext('2d')
       if (myChart) {
         myChart.destroy()
       }
       myChart = new Chart(ctx, {
         type: 'bar',
         data: {
-          labels: incomeStats.map((stat) => stat._id),
+          labels: userStats.map((stat) => stat._id),
           datasets: [
             {
-              label: 'Income per Day',
-              data: incomeStats.map((stat) => stat.totalIncome),
-              backgroundColor: 'rgba(75, 192, 192, 0.2)', // customize as needed
-              borderColor: 'rgba(75, 192, 192, 1)', // customize as needed
+              label: 'New Users per Day',
+              data: userStats.map((stat) => stat.count),
+              backgroundColor: 'rgba(153, 102, 255, 0.2)', // customize as needed
+              borderColor: 'rgba(153, 102, 255, 1)', // customize as needed
               borderWidth: 1, // customize as needed
             },
           ],
@@ -99,21 +54,38 @@ const AdminHomePage = () => {
         myChart.destroy()
       }
     }
-  }, [incomeChartRef, incomeStats])
+  }, [userChartRef, userStats])
 
   useEffect(() => {
-    fetchSalesPerCategory()
-    fetchIncomePerDay()
+    fetchUsersPerDay()
   }, [])
 
   return (
     <div className="p-2 w-full">
-      <div className="flex w-full max-lg:flex-col justify-center items-center gap-y-20 ">
-        <div className="w-full flex justify-center">
-          <canvas ref={incomeChartRef} className="" />
+      <div className="grid grid-cols-1 md:grid-cols-2  w-full   justify-center items-center gap-y-20 gap-x-14 ">
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <IncomeStats />
+          <h1 className="text-center mt-5 text-xl font-semibold">
+            Income status
+          </h1>
         </div>
-        <div className="w-full flex justify-center">
-          <canvas ref={chartRef} className="max-w-fit" />
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <CategoryStats />
+          <h1 className="text-center mt-5 text-xl font-semibold">
+            Sales Per Category
+          </h1>
+        </div>
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <UserStats />
+          <h1 className="text-center mt-5 text-xl font-semibold">
+            New Users Per Day
+          </h1>
+        </div>
+        <div className="w-full h-full flex flex-col items-center justify-center">
+          <SalesPerModel />
+          <h1 className="text-center mt-5 text-xl font-semibold">
+            Sales Per Model
+          </h1>
         </div>
       </div>
     </div>
